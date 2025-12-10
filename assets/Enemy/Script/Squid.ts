@@ -17,8 +17,6 @@ export class Squid extends Component {
         this._rigidBody = this.getComponent(RigidBody2D);
 
         if (this._rigidBody) {
-            // Set type thành Kinematic để Enemy KHÔNG đẩy Player
-            this._rigidBody.type = ERigidBody2DType.Kinematic;
             this._rigidBody.fixedRotation = true;
         }
     }

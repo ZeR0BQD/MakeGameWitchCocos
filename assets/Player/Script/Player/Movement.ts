@@ -1,4 +1,4 @@
-import { _decorator, Component, EventKeyboard, Input, input, Vec3, KeyCode, view, SpriteRenderer, Node, RigidBody2D, Vec2, ERigidBody2DType } from 'cc';
+import { _decorator, Component, EventKeyboard, Input, input, Vec3, KeyCode, view, SpriteRenderer, Node, RigidBody2D, Vec2 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('Movement')
