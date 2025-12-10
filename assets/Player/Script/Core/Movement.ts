@@ -32,7 +32,7 @@ export class Movement extends Component {
 
     }
 
-    onFixedUpdate(deltaTime: number) {
+    update(deltaTime: number) {
         if (this._rigidBody) {
             const velocity = new Vec2(
                 this.direcMove.x * this.speed,
@@ -47,7 +47,6 @@ export class Movement extends Component {
         switch (event.keyCode) {
             case KeyCode.KEY_A:
                 this.direcMove.x = -1;
-                console.log(view.getVisibleSize().width);
                 this.node.setScale(new Vec3(-1, 1, 1));
                 break;
             case KeyCode.KEY_D:

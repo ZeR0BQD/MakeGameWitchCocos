@@ -6,9 +6,6 @@ export class CameraFollow extends Component {
     private tempPos: Vec3 = new Vec3()
     @property(Node) target: Node = null;
     @property protected offset: number = 0.05;
-    start() {
-
-    }
 
     update(deltaTime: number) {
         if (this.target) {

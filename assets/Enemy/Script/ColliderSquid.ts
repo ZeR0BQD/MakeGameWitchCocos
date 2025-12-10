@@ -1,15 +1,14 @@
 import { _decorator, Component, Collider2D, Layers, Node, Contact2DType, RigidBody2D, IPhysics2DContact } from 'cc';
+import { PlayerController } from '../../Player/Script/Core/PlayerController';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('ColliderSquid')
 export class ColliderSquid extends Component {
     start() {
-
         let rigidBody = this.getComponent(RigidBody2D);
-        if (rigidBody) {
-            if (!rigidBody.enabledContactListener) {
-                rigidBody.enabledContactListener = true;
-            }
+        if (rigidBody && !rigidBody.enabledContactListener) {
+            rigidBody.enabledContactListener = true;
         }
 
         let collider = this.getComponent(Collider2D);
@@ -26,15 +25,17 @@ export class ColliderSquid extends Component {
         }
     }
 
-    update(deltaTime: number) {
-
-    }
-
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         const _layerNeedCheck = Layers.nameToLayer('Player');
         const _changeBitmask = 1 << _layerNeedCheck;
+
         if (otherCollider.node.layer & _changeBitmask) {
-            console.log('SQUID: Va chạm với Player');
+            const playerController = otherCollider.node.getComponent(PlayerController);
+
+            if (playerController) {
+                const DAMAGE = 25;
+                playerController.hp -= DAMAGE;
+            }
         }
     }
 }

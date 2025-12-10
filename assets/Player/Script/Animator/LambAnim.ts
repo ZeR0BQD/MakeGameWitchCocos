@@ -1,5 +1,5 @@
 import { _decorator, Component, Animation, Node } from 'cc';
-import { Movement } from '../Player/Movement';
+import { Movement } from '../Core/Movement';
 const { ccclass, property } = _decorator;
 
 @ccclass('LambAnim')

@@ -5,10 +5,8 @@ const { ccclass, property } = _decorator;
 export class ColliderPlayer extends Component {
     start() {
         let rigidBody = this.getComponent(RigidBody2D);
-        if (rigidBody) {
-            if (!rigidBody.enabledContactListener) {
-                rigidBody.enabledContactListener = true;
-            }
+        if (rigidBody && !rigidBody.enabledContactListener) {
+            rigidBody.enabledContactListener = true;
         }
 
         let collider = this.getComponent(Collider2D);
@@ -28,9 +26,7 @@ export class ColliderPlayer extends Component {
         const _layerNeedCheck = Layers.nameToLayer('Enemy');
         const _changeBitmask = 1 << _layerNeedCheck;
         if (otherCollider.node.layer & _changeBitmask) {
-            console.log('PLAYER: Va chạm với Enemy -', otherCollider.node.name);
         }
     }
 
 }
-

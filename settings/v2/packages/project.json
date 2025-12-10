@@ -12,14 +12,23 @@
     },
     {
       "name": "Enemy",
-      "value": 16
+      "value": 2
     }
   ],
   "physics": {
-    "collisionGroups": [],
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "Enemy"
+      },
+      {
+        "index": 2,
+        "name": "Player"
+      }
+    ],
     "collisionMatrix": {
-      "0": 1,
-      "1": 4,
+      "0": 3,
+      "1": 7,
       "2": 2
     }
   }
