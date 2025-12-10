@@ -1,4 +1,4 @@
-import { _decorator, Component, EventKeyboard, Input, input, Vec3, KeyCode, view, SpriteRenderer, Node } from 'cc';
+import { _decorator, Component, EventKeyboard, Input, input, Vec3, KeyCode, view, SpriteRenderer, Node, RigidBody2D, Vec2, ERigidBody2DType } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('Movement')
@@ -8,13 +8,20 @@ export class Movement extends Component {
     public get DirecMove(): Vec3 {
         return this.direcMove;
     }
-    @property protected speed: number = 200;
+    @property protected speed: number = 15;
+
+    private _rigidBody: RigidBody2D = null;
 
     protected onLoad(): void {
         if (!Movement.instance) {
             Movement.instance = this;
         } else {
             this.destroy();
+        }
+
+        this._rigidBody = this.getComponent(RigidBody2D);
+        if (this._rigidBody) {
+            this._rigidBody.fixedRotation = true;
         }
 
         input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
@@ -25,10 +32,14 @@ export class Movement extends Component {
 
     }
 
-    update(deltaTime: number) {
-        let moveDelta = new Vec3(this.direcMove.x, this.direcMove.y, 0).multiplyScalar(this.speed * deltaTime);
-        if (!moveDelta.equals(Vec3.ZERO)) moveDelta.normalize();
-        this.node.translate(moveDelta);
+    onFixedUpdate(deltaTime: number) {
+        if (this._rigidBody) {
+            const velocity = new Vec2(
+                this.direcMove.x * this.speed,
+                this.direcMove.y * this.speed
+            );
+            this._rigidBody.linearVelocity = velocity;
+        }
     }
 
 
