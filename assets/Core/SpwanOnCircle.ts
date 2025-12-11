@@ -7,13 +7,13 @@ export class SpwanOnCircle extends Component {
 
     @property(Prefab) protected prefab: Prefab;
     @property(Node) protected target: Node;
-    @property({ type: CCInteger }) protected poolSize: number = 10;
-    @property protected timeSpawnRoot: number = 3;
+    @property({ type: CCInteger }) protected _poolSize: number = 10;
+    @property protected _timeSpawn: number = 3;
     protected _timer: number = 0;
     protected distanceSpawn: number;
     protected _pool: ObjectPoolling;
     onLoad() {
-        this.distanceSpawn = view.getVisibleSize().width / 2 + 100;
+        this.distanceSpawn = this.getDistanceSpawn();
 
         if (!this.prefab) return;
 
@@ -22,30 +22,42 @@ export class SpwanOnCircle extends Component {
             this._pool = this.node.addComponent(ObjectPoolling);
         }
 
-        this._pool.poolSize = this.poolSize;
+        this._pool.poolSize = this.getPoolSize();
         this._pool.init(this.prefab);
-        this._timer = this.timeSpawnRoot;
+        this._timer = this.getTimeSpawnRoot();
     }
 
-    update(deltaTime: number) {
+    protected getTimeSpawnRoot(): number {
+        return this._timeSpawn;
+    }
+
+    protected getPoolSize(): number {
+        return this._poolSize;
+    }
+
+    protected getDistanceSpawn(): number {
+        return view.getVisibleSize().width / 2 + 100;
+    }
+
+    protected getSpawnObjectWithTime(deltaTime: number): void {
         this._timer -= deltaTime;
         if (this._timer <= 0) {
-            this.spwanObject();
-            this._timer = this.timeSpawnRoot;
+            this.spwanObjectOnCircle();
+            this._timer = this._timeSpawn;
         }
     }
 
-    protected spwanObject(): void {
+    protected spwanObjectOnCircle(): void {
         const spawn = this._pool.getObject();
         if (spawn) {
-            spawn.setPosition(this.getRandomPointOnCircle(this.target.getPosition(), this.distanceSpawn));
+            spawn.setPosition(this.getPointOnCircle(this.target.getPosition(), this.distanceSpawn));
         }
     }
 
-    protected getRandomPointOnCircle(root: Vec3, distance: number): Vec3 {
+    protected getPointOnCircle(target: Vec3, distance: number): Vec3 {
         const angle = Math.random() * 2 * Math.PI;
-        const x = distance * Math.cos(angle) + root.x;
-        const y = distance * Math.sin(angle) + root.y;
+        const x = distance * Math.cos(angle) + target.x;
+        const y = distance * Math.sin(angle) + target.y;
         return new Vec3(x, y, 0);
     }
 }

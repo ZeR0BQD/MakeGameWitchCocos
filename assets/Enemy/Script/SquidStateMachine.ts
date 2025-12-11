@@ -1,36 +1,37 @@
-import { _decorator, CCInteger, Component, Node, Vec3, Vec2, RigidBody2D, ERigidBody2DType } from 'cc';
-import { ObjectPoolling } from '../../Core/ObjectPoolling';
+import { _decorator, Component, Node, Vec2, RigidBody2D } from 'cc';
 import { Movement } from '../../Player/Script/Core/Movement';
 import { ISquidState } from './States/ISquidState';
 import { SquidMoveState } from './States/SquidMoveState';
 import { SquidAttackState } from './States/SquidAttackState';
+import { SquidController } from './SquidController';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('SquidStateMachine')
 export class SquidStateMachine extends Component {
-
-    @property({ type: CCInteger })
-    public speed: number = 8;
-
-    @property({ type: CCInteger })
-    public attackRange: number = 175;
-
     public target: Node = null;
 
     public get rigidBody(): RigidBody2D {
         return this._rigidBody;
     }
     private _rigidBody: RigidBody2D = null;
-
-    protected _pool: ObjectPoolling;
+    private _controller: SquidController = null;
 
     public currentState: ISquidState = null;
     public moveState: SquidMoveState = new SquidMoveState();
     public attackState: SquidAttackState = new SquidAttackState();
 
+    public get speed(): number {
+        return this._controller ? this._controller.speed : 0;
+    }
+
+    public get attackRange(): number {
+        return this._controller ? this._controller.attackRange : 0;
+    }
+
     start() {
         this.target = Movement.instance.node;
+        this._controller = this.getComponent(SquidController);
 
         this._rigidBody = this.getComponent(RigidBody2D);
         if (this._rigidBody) {
@@ -53,20 +54,5 @@ export class SquidStateMachine extends Component {
 
         this.currentState = newState;
         this.currentState.enter(this);
-    }
-
-    public init(poolInstance: ObjectPoolling): void {
-        this._pool = poolInstance;
-        if (this._rigidBody) {
-            this._rigidBody.linearVelocity = Vec2.ZERO;
-        }
-
-        this.changeState(this.moveState);
-    }
-
-    protected onDestroy(): void {
-        if (this._pool) {
-            this._pool.returnObject(this.node);
-        }
     }
 }

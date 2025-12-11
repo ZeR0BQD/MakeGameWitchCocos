@@ -1,11 +1,15 @@
 import { _decorator, Component, Collider2D, Layers, Node, Contact2DType, RigidBody2D, IPhysics2DContact } from 'cc';
 import { PlayerController } from '../../Player/Script/Core/PlayerController';
+import { SquidController } from './SquidController';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('ColliderSquid')
 export class ColliderSquid extends Component {
+    protected squidController: SquidController = null;
     start() {
+        this.squidController = this.getComponent(SquidController);
+
         let rigidBody = this.getComponent(RigidBody2D);
         if (rigidBody && !rigidBody.enabledContactListener) {
             rigidBody.enabledContactListener = true;
@@ -33,7 +37,7 @@ export class ColliderSquid extends Component {
             const playerController = otherCollider.node.getComponent(PlayerController);
 
             if (playerController) {
-                const DAMAGE = 25;
+                const DAMAGE = this.squidController?.damage ?? 25;
                 playerController.hp -= DAMAGE;
             }
         }

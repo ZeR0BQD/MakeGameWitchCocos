@@ -1,15 +1,20 @@
 import { _decorator, Component } from 'cc';
 import { UIManager } from '../../../UI/Script/UIManager';
+import { GameManager } from '../../../Core/GameManager';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
+
     @property({ tooltip: 'HP hiện tại' })
     private _hp: number = 100;
 
     @property({ tooltip: 'HP tối đa', readonly: true })
     private _maxHP: number = 100;
+
+    @property({ tooltip: 'HP tối đa', readonly: true })
+    private _currentHP: number = 100;
 
     @property({ tooltip: 'EXP hiện tại' })
     private _exp: number = 0;
@@ -20,9 +25,34 @@ export class PlayerController extends Component {
     @property({ tooltip: 'Level hiện tại' })
     private _level: number = 1;
 
+    private _pendingExpRewards: number = 0;
+
+    public static _playerInstance: PlayerController;
+
+    public static get playerInstance(): PlayerController {
+        return PlayerController._playerInstance;
+    }
+
+    protected onLoad(): void {
+        if (!PlayerController._playerInstance) {
+            PlayerController._playerInstance = this;
+        } else {
+            this.destroy();
+        }
+    }
+
     start() {
+        this._currentHP = this._maxHP;
         this._publishHP();
         this._publishEXP();
+    }
+
+    protected update(dt: number): void {
+        if (this._pendingExpRewards > 0) {
+            const totalExp = this._pendingExpRewards;
+            this._pendingExpRewards = 0;
+            this.exp += totalExp;
+        }
     }
 
     public get hp(): number {
@@ -71,6 +101,10 @@ export class PlayerController extends Component {
         return this._maxEXP;
     }
 
+    public addExpReward(amount: number): void {
+        this._pendingExpRewards += amount;
+    }
+
     private _publishHP(): void {
         const uiManager = UIManager.getInstance();
         if (uiManager) {
@@ -94,6 +128,25 @@ export class PlayerController extends Component {
         }
     }
 
+    public applyUpgrade(upgradeData: { type: string, value: number }): void {
+        this.processUpgrade(upgradeData);
+    }
+
+    protected processUpgrade(upgradeData: { type: string, value: number }): void {
+        switch (upgradeData.type) {
+            case 'HEALTH':
+                this._hp += upgradeData.value;
+                this._publishHP();
+                break;
+            case 'MAX_HEALTH':
+                this._maxHP += upgradeData.value;
+                this._hp = this._maxHP;
+                this._publishHP();
+                break;
+        }
+    }
+
+
     private _levelUp(): void {
         this._level++;
         this._exp -= this._maxEXP;
@@ -102,6 +155,22 @@ export class PlayerController extends Component {
 
         this._publishHP();
         this._publishEXP();
+
+        this._triggerUpgrade();
+    }
+
+    private _triggerUpgrade(): void {
+        const gameManager = GameManager.instance;
+        if (gameManager) {
+            gameManager.pauseGame();
+        }
+
+        const uiManager = UIManager.getInstance();
+        if (uiManager) {
+            uiManager.publish('LEVEL_UP_UPGRADE', {
+                level: this._level
+            });
+        }
     }
 
     private _onDeath(): void {

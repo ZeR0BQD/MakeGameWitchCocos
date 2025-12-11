@@ -20,7 +20,7 @@ export class SquidAttackState implements ISquidState {
 
     private _currentPhase: AttackPhase = AttackPhase.PREPARE;
 
-    private _dashSpeedMultiplier: number = 15;
+    private _dashSpeedMultiplier: number = 2;
 
     enter(squid: SquidStateMachine): void {
         this._currentPhase = AttackPhase.PREPARE;
