@@ -48,7 +48,7 @@ export class CardUpgrade extends Component {
     }
 
     private applyUpgrade(): void {
-        const player = PlayerController.playerInstance;
+        const player = PlayerController._instance;
         if (!player) {
             return;
         }

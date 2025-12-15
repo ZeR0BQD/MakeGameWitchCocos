@@ -1,11 +1,15 @@
 import { _decorator, Component } from 'cc';
 import { UIManager } from '../../../UI/Script/UIManager';
 import { GameManager } from '../../../Core/GameManager';
+import { IConfigurable } from 'db://assets/Core/Config/IConfigurable';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerController')
-export class PlayerController extends Component {
+export class PlayerController extends Component implements IConfigurable {
+
+    @property({ tooltip: 'Speed hiện tại' })
+    protected _speed: number = 15;
 
     @property({ tooltip: 'HP hiện tại' })
     private _hp: number = 100;
@@ -27,15 +31,17 @@ export class PlayerController extends Component {
 
     private _pendingExpRewards: number = 0;
 
-    public static _playerInstance: PlayerController;
+    public static _instance: PlayerController;
 
-    public static get playerInstance(): PlayerController {
-        return PlayerController._playerInstance;
-    }
+    public readonly _keyToVariable = {
+        "maxHP": "_maxHP",
+        "maxEXP": "_maxEXP",
+        "speed": "_speed"
+    };
 
     protected onLoad(): void {
-        if (!PlayerController._playerInstance) {
-            PlayerController._playerInstance = this;
+        if (!PlayerController._instance) {
+            PlayerController._instance = this;
         } else {
             this.destroy();
         }
@@ -46,6 +52,7 @@ export class PlayerController extends Component {
         this._publishHP();
         this._publishEXP();
     }
+
 
     protected update(dt: number): void {
         if (this._pendingExpRewards > 0) {
@@ -174,6 +181,7 @@ export class PlayerController extends Component {
     }
 
     private _onDeath(): void {
+
     }
 }
 

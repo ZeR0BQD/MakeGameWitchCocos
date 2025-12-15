@@ -57,7 +57,7 @@ export class SquidController extends IDamageable {
     }
 
     protected die(): void {
-        const player = PlayerController.playerInstance;
+        const player = PlayerController._instance;
         if (player) {
             player.addExpReward(this.expReward);
         }

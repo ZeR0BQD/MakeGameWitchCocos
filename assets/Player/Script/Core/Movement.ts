@@ -1,4 +1,5 @@
 import { _decorator, Component, EventKeyboard, Input, input, Vec3, KeyCode, view, SpriteRenderer, Node, RigidBody2D, Vec2 } from 'cc';
+import { PlayerController } from './PlayerController';
 const { ccclass, property } = _decorator;
 
 @ccclass('Movement')
@@ -8,7 +9,8 @@ export class Movement extends Component {
     public get DirecMove(): Vec3 {
         return this.direcMove;
     }
-    @property protected speed: number = 15;
+
+    @property protected _speed: number;
 
     private _rigidBody: RigidBody2D = null;
 
@@ -18,6 +20,8 @@ export class Movement extends Component {
         } else {
             this.destroy();
         }
+
+
 
         this._rigidBody = this.getComponent(RigidBody2D);
         if (this._rigidBody) {
@@ -29,14 +33,14 @@ export class Movement extends Component {
     }
 
     start() {
-
+        this._speed = PlayerController._instance[PlayerController._instance._keyToVariable["speed"]];
     }
 
     update(deltaTime: number) {
         if (this._rigidBody) {
             const velocity = new Vec2(
-                this.direcMove.x * this.speed,
-                this.direcMove.y * this.speed
+                this.direcMove.x * this._speed,
+                this.direcMove.y * this._speed
             );
             this._rigidBody.linearVelocity = velocity;
         }

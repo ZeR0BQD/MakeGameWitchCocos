@@ -1,0 +1,314 @@
+'use strict';
+
+exports.template = `
+<ui-prop>
+    <ui-label slot="label">Config Asset</ui-label>
+    <ui-asset slot="content" droppable="cc.JsonAsset"></ui-asset>
+</ui-prop>
+
+<ui-prop>
+    <ui-label slot="label">Actions</ui-label>
+    <div slot="content" style="display: flex; gap: 5px;">
+        <ui-button id="reset-btn">
+            <ui-icon value="close"></ui-icon>
+            Reset
+        </ui-button>
+        <ui-button class="blue" id="load-btn">
+            <ui-icon value="download"></ui-icon>
+            Load
+        </ui-button>
+        <ui-button class="green" id="save-btn">
+            <ui-icon value="edit"></ui-icon>
+            Save
+        </ui-button>
+    </div>
+</ui-prop>
+
+<ui-prop id="status-prop" hidden>
+    <ui-label slot="label">Status</ui-label>
+    <div slot="content" id="status-text">Not Loaded</div>
+</ui-prop>
+
+<ui-section id="config-browser" expand cache-expand="config-loader-browser">
+    <div slot="header">Config Browser</div>
+    
+    <ui-prop id="breadcrumb-prop" hidden>
+        <ui-label slot="label">Path</ui-label>
+        <div slot="content" id="breadcrumb"></div>
+    </ui-prop>
+    
+    <div id="dropdowns-container"></div>
+    <div id="values-container"></div>
+</ui-section>
+`;
+
+exports.$ = {
+    asset: 'ui-asset',
+    resetBtn: '#reset-btn',
+    loadBtn: '#load-btn',
+    saveBtn: '#save-btn',
+    statusProp: '#status-prop',
+    statusText: '#status-text',
+    breadcrumbProp: '#breadcrumb-prop',
+    breadcrumb: '#breadcrumb',
+    dropdownsContainer: '#dropdowns-container',
+    valuesContainer: '#values-container'
+};
+
+let _panel = null;
+
+exports.ready = function () {
+    console.log('[Inspector] ready() called');
+    _panel = this;
+    _panel.configData = null;
+    _panel.editedData = null;
+    _panel.selectedPath = [];
+    _panel.isModified = false;
+
+    if (_panel.$.resetBtn) {
+        _panel.$.resetBtn.addEventListener('click', onReset);
+    }
+
+    if (_panel.$.loadBtn) {
+        _panel.$.loadBtn.addEventListener('click', onLoadConfig);
+    }
+
+    if (_panel.$.saveBtn) {
+        _panel.$.saveBtn.addEventListener('click', onSaveConfig);
+    }
+};
+
+exports.update = function (dump) {
+    this.dump = dump;
+
+    if (this.$.asset && dump.value.configAsset) {
+        this.$.asset.value = dump.value.configAsset.uuid;
+    }
+};
+
+function onReset() {
+    console.log('[Inspector] onReset called');
+    _panel.configData = null;
+    _panel.editedData = null;
+    _panel.selectedPath = [];
+    _panel.isModified = false;
+
+    _panel.$.dropdownsContainer.innerHTML = '';
+    _panel.$.valuesContainer.innerHTML = '';
+    _panel.$.breadcrumbProp.hidden = true;
+    _panel.$.statusProp.hidden = true;
+
+    console.log('[ConfigBrowser] Reset complete');
+}
+
+function onLoadConfig() {
+    console.log('[Inspector] onLoadConfig called');
+    if (!_panel.dump || !_panel.dump.value.configAsset) {
+        console.warn('[ConfigBrowser] No config asset assigned');
+        return;
+    }
+
+    const uuid = _panel.dump.value.uuid;
+
+    Editor.Message.request('scene', 'execute-component-method', {
+        uuid: uuid,
+        name: 'reloadConfig',
+        args: []
+    }).then(() => {
+        console.log('[ConfigBrowser] reloadConfig promise resolved');
+        const configAsset = _panel.dump.value.configAsset;
+        console.log('[ConfigBrowser] configAsset:', configAsset);
+        if (configAsset && configAsset.json) {
+            console.log('[ConfigBrowser] configAsset.json exists, keys:', Object.keys(configAsset.json));
+            _panel.configData = configAsset.json;
+            _panel.editedData = JSON.parse(JSON.stringify(_panel.configData));
+            _panel.selectedPath = [];
+            _panel.isModified = false;
+
+            _panel.$.statusProp.hidden = false;
+            _panel.$.statusText.textContent = 'Loaded ✓';
+            _panel.$.statusText.style.color = '#4CAF50';
+
+            console.log('[ConfigBrowser] Calling renderLevel1...');
+            renderLevel1();
+
+            console.log('[ConfigBrowser] Config loaded');
+        }
+    }).catch((err) => {
+        console.error('[ConfigBrowser] Failed to load config:', err);
+    });
+}
+
+function onSaveConfig() {
+    console.log('[Inspector] onSaveConfig called');
+    if (!_panel.editedData) {
+        console.warn('[ConfigBrowser] No data to save');
+        return;
+    }
+
+    const jsonString = JSON.stringify(_panel.editedData, null, 4);
+    const assetUuid = _panel.dump.value.configAsset.uuid;
+
+    Editor.Message.request('asset-db', 'save-asset', {
+        uuid: assetUuid,
+        content: jsonString
+    }).then(() => {
+        console.log('[ConfigBrowser] reloadConfig promise resolved');
+        _panel.configData = JSON.parse(JSON.stringify(_panel.editedData));
+        _panel.isModified = false;
+
+        _panel.$.statusText.textContent = 'Saved ✓';
+        _panel.$.statusText.style.color = '#4CAF50';
+
+        console.log('[ConfigBrowser] Config saved');
+    }).catch((err) => {
+        console.error('[ConfigBrowser] Failed to save config:', err);
+        _panel.$.statusText.textContent = 'Save Failed ✗';
+        _panel.$.statusText.style.color = '#F44336';
+    });
+}
+
+function renderLevel1() {
+    const keys = Object.keys(_panel.configData);
+    renderDropdown(0, keys);
+    _panel.$.breadcrumbProp.hidden = true;
+}
+
+function renderDropdown(level, options) {
+    while (_panel.$.dropdownsContainer.children.length > level) {
+        _panel.$.dropdownsContainer.lastChild.remove();
+    }
+
+    _panel.$.valuesContainer.innerHTML = '';
+
+    const prop = document.createElement('ui-prop');
+    const label = document.createElement('ui-label');
+    label.slot = 'label';
+    label.textContent = `Level ${level + 1}`;
+
+    const select = document.createElement('ui-select');
+    select.slot = 'content';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '-- Select --';
+    select.appendChild(placeholder);
+
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt;
+        select.appendChild(option);
+    });
+
+    select.addEventListener('change', (e) => {
+        const selectedKey = e.target.value;
+        if (selectedKey) {
+            onSelectField(level, selectedKey);
+        }
+    });
+
+    prop.appendChild(label);
+    prop.appendChild(select);
+    _panel.$.dropdownsContainer.appendChild(prop);
+}
+
+function onSelectField(level, key) {
+    _panel.selectedPath = _panel.selectedPath.slice(0, level);
+    _panel.selectedPath.push(key);
+
+    updateBreadcrumb();
+
+    let current = _panel.editedData;
+    for (const k of _panel.selectedPath) {
+        current = current[k];
+    }
+
+    if (typeof current === 'object' && !Array.isArray(current)) {
+        const keys = Object.keys(current);
+
+        const hasOnlyPrimitives = keys.every(k => {
+            const val = current[k];
+            return typeof val !== 'object' || val === null;
+        });
+
+        if (hasOnlyPrimitives) {
+            renderValues(current);
+        } else {
+            renderDropdown(level + 1, keys);
+        }
+    } else {
+        renderValues({ [_panel.selectedPath[_panel.selectedPath.length - 1]]: current });
+    }
+}
+
+function updateBreadcrumb() {
+    if (_panel.selectedPath.length > 0) {
+        _panel.$.breadcrumbProp.hidden = false;
+        _panel.$.breadcrumb.textContent = _panel.selectedPath.join(' / ');
+    } else {
+        _panel.$.breadcrumbProp.hidden = true;
+    }
+}
+
+function renderValues(obj) {
+    _panel.$.valuesContainer.innerHTML = '';
+
+    Object.keys(obj).forEach(key => {
+        const value = obj[key];
+        const prop = document.createElement('ui-prop');
+
+        const label = document.createElement('ui-label');
+        label.slot = 'label';
+        label.textContent = key;
+
+        let input;
+        if (typeof value === 'number') {
+            input = document.createElement('ui-num-input');
+            input.value = value;
+        } else if (typeof value === 'boolean') {
+            input = document.createElement('ui-checkbox');
+            input.checked = value;
+        } else {
+            input = document.createElement('ui-input');
+            input.value = value !== null ? String(value) : '';
+        }
+
+        input.slot = 'content';
+        input.addEventListener('change', (e) => {
+            let newValue;
+            if (typeof value === 'number') {
+                newValue = parseFloat(e.target.value);
+            } else if (typeof value === 'boolean') {
+                newValue = e.target.checked;
+            } else {
+                newValue = e.target.value;
+            }
+            onValueChange(key, newValue);
+        });
+
+        prop.appendChild(label);
+        prop.appendChild(input);
+        _panel.$.valuesContainer.appendChild(prop);
+    });
+}
+
+function onValueChange(key, newValue) {
+    let current = _panel.editedData;
+    for (let i = 0; i < _panel.selectedPath.length - 1; i++) {
+        current = current[_panel.selectedPath[i]];
+    }
+
+    if (_panel.selectedPath.length > 0) {
+        const lastKey = _panel.selectedPath[_panel.selectedPath.length - 1];
+        current = current[lastKey];
+    }
+
+    current[key] = newValue;
+    _panel.isModified = true;
+
+    _panel.$.statusText.textContent = 'Modified *';
+    _panel.$.statusText.style.color = '#FFC107';
+
+    console.log(`[ConfigBrowser] ${key} = ${newValue}`);
+}

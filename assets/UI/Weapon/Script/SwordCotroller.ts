@@ -11,7 +11,7 @@ export class SwordCotroller extends Component {
     protected _radius: number;
 
     start() {
-        this._target = PlayerController._playerInstance.node;
+        this._target = PlayerController._instance.node;
         this.getAngleWithTarget()
         this._radius = Vec3.distance(this.node.getPosition(), this._target.getPosition());
     }
