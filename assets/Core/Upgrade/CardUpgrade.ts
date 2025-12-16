@@ -2,11 +2,27 @@ import { _decorator, Component, Button } from 'cc';
 import { PlayerController } from 'db://assets/Player/Script/Core/PlayerController';
 import { InstanceCard } from './InstanceCard';
 import { UpgradeManager } from './UpgradeManager';
+import { IConfig } from 'db://assets/Core/Config/IConfig';
 
 const { ccclass } = _decorator;
 
 @ccclass('CardUpgrade')
-export class CardUpgrade extends Component {
+export class CardUpgrade extends Component implements IConfig {
+    // IConfig implementation 
+    readonly _keyToVariable: Record<string, string> = {
+        "maxHP": "_maxHP",
+        "maxEXP": "_maxEXP",
+        "speed": "_speed"
+    };
+
+    // Card upgrade stats - Sẽ được load từ config
+    private _maxHP: number = 0;
+    private _maxEXP: number = 0;
+    private _speed: number = 0;
+
+    // Test variable để verify config path được set từ Inspector
+    public pathConfig: string = "";
+
     private _instanceCard: InstanceCard = null;
 
     protected onLoad(): void {
@@ -14,6 +30,10 @@ export class CardUpgrade extends Component {
         if (button) {
             button.node.on(Button.EventType.CLICK, this.onCardClick, this);
         }
+    }
+
+    protected start(): void {
+        // Config loaded via ConfigLoader
     }
 
     onDestroy(): void {
@@ -28,7 +48,7 @@ export class CardUpgrade extends Component {
     }
 
     private onCardClick(): void {
-        this.applyUpgrade();
+        // TODO: Implement logic với ConfigLoader
 
         if (this._instanceCard) {
             this._instanceCard.hideCards();
@@ -40,21 +60,5 @@ export class CardUpgrade extends Component {
         }
     }
 
-    protected prepareUpgradeData(): { type: string, value: number } {
-        return {
-            type: 'MAX_HEALTH',
-            value: 20
-        };
-    }
 
-    private applyUpgrade(): void {
-        const player = PlayerController._instance;
-        if (!player) {
-            return;
-        }
-
-        const upgradeData = this.prepareUpgradeData();
-        player.applyUpgrade(upgradeData);
-        console.log('Upgrade applied:', upgradeData, "Player HP", player.maxHP);
-    }
 }

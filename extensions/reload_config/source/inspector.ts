@@ -5,6 +5,7 @@
 
 // Declare require to fix TS error since @types/node might not be included in tsconfig types list
 declare const require: any;
+declare const Editor: any;
 
 const path = require('path');
 const fs = require('fs');
@@ -12,15 +13,8 @@ const fs = require('fs');
 type Selector<$> = { $: Record<keyof $, any | null> }
 
 export const template = `
-<ui-prop>
-    <ui-label slot="label">Config Asset</ui-label>
-    <ui-asset slot="content" id="config-asset" droppable="cc.JsonAsset"></ui-asset>
-</ui-prop>
-
-<ui-prop>
-    <ui-label slot="label">Update Config Asset</ui-label>
-    <ui-asset slot="content" id="update-asset" droppable="cc.JsonAsset"></ui-asset>
-</ui-prop>
+<ui-prop type="dump" id="config-asset-prop"></ui-prop>
+<ui-prop type="dump" id="update-asset-prop"></ui-prop>
 
 <ui-prop>
     <ui-label slot="label">Actions</ui-label>
@@ -63,8 +57,8 @@ export const template = `
 `;
 
 export const $ = {
-    asset: '#config-asset',
-    updateAsset: '#update-asset',
+    configAssetProp: '#config-asset-prop',
+    updateAssetProp: '#update-asset-prop',
     clearBtn: '#clear-btn',
     loadBtn: '#load-btn',
     updateBtn: '#update-btn',
@@ -109,13 +103,27 @@ export function ready(this: any) {
     }
 }
 
+
+
 export function update(this: any, dump: any) {
     this.dump = dump;
+
+    // Render component properties to ui-prop type="dump" elements
+    if (dump && dump.value) {
+        // Render configAsset property
+        if (this.$.configAssetProp && dump.value.configAsset) {
+            this.$.configAssetProp.render(dump.value.configAsset);
+        }
+
+        // Render updateConfigAsset property
+        if (this.$.updateAssetProp && dump.value.updateConfigAsset) {
+            this.$.updateAssetProp.render(dump.value.updateConfigAsset);
+        }
+    }
 }
 
-function onClear() {
-    console.log('[Inspector] Clear button clicked');
 
+function onClear() {
     // Clear panel state
     _panel.configData = null;
     _panel.editedData = null;
@@ -128,16 +136,11 @@ function onClear() {
     (_panel as any).$.valuesContainer.innerHTML = '';
     (_panel as any).$.breadcrumbProp.hidden = true;
     (_panel as any).$.statusProp.hidden = true;
-
-    console.log('[Inspector] ✓ Cleared all state');
 }
 
 function onLoadConfig() {
-    console.log('[Inspector] ========== LOAD CONFIG START ==========');
-
-    // Đọc UUID trực tiếp từ ui-asset
-    const assetUUID = (_panel as any).$.asset.value;
-    console.log('[Inspector] Config asset UUID from ui-asset.value:', assetUUID);
+    // Đọc UUID từ component dump
+    const assetUUID = _panel.dump?.value?.configAsset?.value?.uuid;
 
     if (!assetUUID) {
         (_panel as any).$.statusProp.hidden = false;
@@ -158,8 +161,6 @@ function onLoadConfig() {
         name: 'loadAndApplyConfig',
         args: []
     }).then(() => {
-        console.log('[Inspector] ✓ Component loadAndApplyConfig() called');
-
         // 2. Query asset info
         return (Editor.Message.request as any)('asset-db', 'query-asset-info', assetUUID);
     }).then((assetInfo: any) => {
@@ -168,7 +169,6 @@ function onLoadConfig() {
         }
 
         let filePath = assetInfo.source;
-        console.log('[Inspector] Asset source path:', filePath);
 
         // Convert db:// path
         if (filePath.startsWith('db:/')) {
@@ -194,8 +194,6 @@ function onLoadConfig() {
 
         renderLevel1();
 
-        console.log('[Inspector] ========== LOAD CONFIG COMPLETE ==========');
-
     }).catch((err: any) => {
         console.error('[Inspector] Load error:', err);
         (_panel as any).$.statusProp.hidden = false;
@@ -205,14 +203,8 @@ function onLoadConfig() {
 }
 
 async function onUpdateConfig() {
-    console.log('[Inspector] ========== UPDATE & SAVE START ==========');
-
-    // Đọc UUID từ ui-asset
-    const configAssetUUID = (_panel as any).$.asset.value;
-    const updateAssetUUID = (_panel as any).$.updateAsset.value;
-
-    console.log('[Inspector] Config asset UUID:', configAssetUUID);
-    console.log('[Inspector] Update asset UUID:', updateAssetUUID);
+    // Đọc UUID từ dump
+    const configAssetUUID = _panel.dump?.value?.configAsset?.value?.uuid;
 
     if (!configAssetUUID) {
         (_panel as any).$.statusProp.hidden = false;
@@ -221,76 +213,50 @@ async function onUpdateConfig() {
         return;
     }
 
-    if (!updateAssetUUID) {
+    // Check if there are changes to save
+    if (!_panel.editedData) {
         (_panel as any).$.statusProp.hidden = false;
-        (_panel as any).$.statusText.textContent = 'Error: Update Config Asset required';
+        (_panel as any).$.statusText.textContent = 'Error: No config loaded';
         (_panel as any).$.statusText.style.color = '#F44336';
         return;
     }
 
     try {
-        // 1. Get file paths
+        // 1. Get config file path
         const configAssetInfo: any = await (Editor.Message.request as any)('asset-db', 'query-asset-info', configAssetUUID);
-        const updateAssetInfo: any = await (Editor.Message.request as any)('asset-db', 'query-asset-info', updateAssetUUID);
 
         let configFilePath = configAssetInfo.source;
-        let updateFilePath = updateAssetInfo.source;
 
-        // Convert db:// paths
+        // Convert db:// path
         if (configFilePath.startsWith('db:/')) {
             const relativePath = configFilePath.substring(4).replace(/\//g, path.sep);
             configFilePath = path.join(Editor.Project.path, relativePath);
         }
-        if (updateFilePath.startsWith('db:/')) {
-            const relativePath = updateFilePath.substring(4).replace(/\//g, path.sep);
-            updateFilePath = path.join(Editor.Project.path, relativePath);
-        }
 
-        console.log('[Inspector] Config file path:', configFilePath);
-        console.log('[Inspector] Update file path:', updateFilePath);
-
-        // 2. Read both JSON files
-        const configData = JSON.parse(fs.readFileSync(configFilePath, 'utf-8'));
-        const updateData = JSON.parse(fs.readFileSync(updateFilePath, 'utf-8'));
-
-        console.log('[Inspector] === BEFORE MERGE ===');
-        console.log('[Inspector] Config:', JSON.stringify(configData, null, 2));
-        console.log('[Inspector] Update:', JSON.stringify(updateData, null, 2));
-
-        // 3. Deep merge
-        deepMerge(configData, updateData);
-
-        console.log('[Inspector] === AFTER MERGE ===');
-        console.log('[Inspector] Merged config:', JSON.stringify(configData, null, 2));
-
-        // 4. Save to file
-        const jsonString = JSON.stringify(configData, null, 4);
+        // 2. Save editedData to file
+        const jsonString = JSON.stringify(_panel.editedData, null, 4);
         fs.writeFileSync(configFilePath, jsonString, 'utf-8');
 
-        console.log('[Inspector] ✓✓✓ SAVED to file:', configFilePath);
-
-        // 5. Refresh asset database
+        // 3. Refresh asset database
         await (Editor.Message.request as any)('asset-db', 'refresh-asset', configAssetUUID);
 
-        // 6. Update UI
+        // 4. Update state
+        _panel.configData = JSON.parse(JSON.stringify(_panel.editedData));
+        _panel.isModified = false;
+
+        // 5. Update UI
         (_panel as any).$.statusProp.hidden = false;
-        (_panel as any).$.statusText.textContent = 'Updated & Saved ✓';
-        (_panel as any).$.statusText.style.color = '#FF9800';
-
-        // 7. Reload config to show changes
-        setTimeout(() => {
-            onLoadConfig();
-        }, 500);
-
-        console.log('[Inspector] ========== UPDATE & SAVE COMPLETE ==========');
+        (_panel as any).$.statusText.textContent = 'Saved ✓';
+        (_panel as any).$.statusText.style.color = '#4CAF50';
 
     } catch (err: any) {
-        console.error('[Inspector] Update failed:', err);
+        console.error('[Inspector] Save failed:', err);
         (_panel as any).$.statusProp.hidden = false;
-        (_panel as any).$.statusText.textContent = 'Update Failed ✗';
+        (_panel as any).$.statusText.textContent = 'Save Failed ✗';
         (_panel as any).$.statusText.style.color = '#F44336';
     }
 }
+
 
 /**
  * Deep merge source vào target
@@ -438,15 +404,24 @@ function renderValues(obj: any) {
         if (typeof value === 'number') {
             input = document.createElement('ui-num-input');
             input.value = value;
-            input.setAttribute('readonly', 'true'); // Read-only vì chỉ xem
+            // Editable - track changes
+            input.addEventListener('change', (e: any) => {
+                onValueChange(key, parseFloat(e.target.value));
+            });
         } else if (typeof value === 'boolean') {
             input = document.createElement('ui-checkbox');
             input.checked = value;
-            input.setAttribute('disabled', 'true'); // Disabled vì chỉ xem
+            // Editable - track changes
+            input.addEventListener('change', (e: any) => {
+                onValueChange(key, e.target.checked);
+            });
         } else {
             input = document.createElement('ui-input');
             input.value = value !== null ? String(value) : '';
-            input.setAttribute('readonly', 'true'); // Read-only
+            // Editable - track changes
+            input.addEventListener('change', (e: any) => {
+                onValueChange(key, e.target.value);
+            });
         }
 
         input.slot = 'content';
@@ -455,4 +430,19 @@ function renderValues(obj: any) {
         prop.appendChild(input);
         (_panel as any).$.valuesContainer.appendChild(prop);
     });
+}
+
+/**
+ * Handle value change - update editedData ở deep nested path
+ */
+function onValueChange(key: string, newValue: any) {
+    // Navigate to current path trong editedData
+    let current = _panel.editedData;
+    for (const pathKey of _panel.selectedPath) {
+        current = current[pathKey];
+    }
+
+    // Update value
+    current[key] = newValue;
+    _panel.isModified = true;
 }

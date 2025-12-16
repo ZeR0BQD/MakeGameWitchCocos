@@ -72,8 +72,6 @@ export class UIManager extends Component {
     }
 
     public logSubscribers(): void {
-        this._subscriberMap.forEach((subscribers, eventType) => {
-            console.log(`"${eventType}": ${subscribers.length} subscribers`);
-        });
+        // Debug method - empty
     }
 }

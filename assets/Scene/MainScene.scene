@@ -113,7 +113,7 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 640.0000000000001,
+      "x": 640,
       "y": 360.00000000000006,
       "z": 0
     },
@@ -1032,7 +1032,7 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 1280.0000000000002,
+      "width": 1280,
       "height": 720
     },
     "_anchorPoint": {
@@ -1692,9 +1692,14 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "configAsset": null,
-    "updateConfigAsset": null,
-    "configPath": "",
+    "configAsset": {
+      "__uuid__": "6fb5111a-ae68-40c6-b929-1b693f05e05b",
+      "__expectedType__": "cc.JsonAsset"
+    },
+    "updateConfigAsset": {
+      "__uuid__": "73631df5-aaf0-4cb0-9a98-a14a704b4fa1",
+      "__expectedType__": "cc.JsonAsset"
+    },
     "autoLoadOnStart": true,
     "_id": "44tXdApvNJK4Rq3EkJcCNh"
   },

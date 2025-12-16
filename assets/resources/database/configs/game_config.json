@@ -1,52 +1,28 @@
 {
     "player": {
-        "playerSkill": {
-            "skillDash": {
-                "cooldown": 5,
-                "distance": 250,
-                "cost": 10
-            },
-            "skillAttack": {
-                "damage": 50,
-                "cooldown": 2,
-                "cost": 5
-            }
-        },
-        "playerBuff": {
-            "buffMaxHP": {
-                "value": 21
-            },
-            "buffHP": {
-                "value": 20,
-                "duration": 10
-            },
-            "buffEXP": {
-                "value": 1.5,
-                "duration": 30
-            },
-            "buffSpeed": {
-                "value": 50,
-                "duration": 15
-            }
-        },
         "playerStats": {
             "maxHP": 101,
             "maxEXP": 100,
             "speed": 15
         }
     },
-    "enemy": {
-        "enemySquid": {
-            "hp": 100,
-            "speed": 150,
-            "damage": 10,
-            "attackRange": 50
-        },
-        "enemyOctopus": {
-            "hp": 150,
-            "speed": 120,
-            "damage": 15,
-            "attackRange": 70
+    "cardUpgrade": {
+        "upgradeBaseStats": {
+            "cardUpgradeLv1": {
+                "maxHP": 20,
+                "maxEXP": -10,
+                "speed": 2
+            },
+            "cardUpgradeLv2": {
+                "maxHP": 40,
+                "maxEXP": -20,
+                "speed": 5
+            },
+            "cardUpgradeLv3": {
+                "maxHP": 80,
+                "maxEXP": -40,
+                "speed": 10
+            }
         }
     }
 }

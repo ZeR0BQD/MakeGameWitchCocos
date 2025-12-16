@@ -1,5 +1,5 @@
 import { _decorator, JsonAsset, resources, Component } from 'cc';
-import { IConfigurable } from './IConfigurable';
+import { IConfig } from './IConfig';
 
 const { ccclass, property } = _decorator;
 
@@ -8,7 +8,7 @@ declare const Editor: any;
 declare const require: any;
 
 /**
- * ConfigLoader - Component để load và apply config cho IConfigurable controller
+ * ConfigLoader - Component để load và apply config cho IConfig controller
  * Attach lên node cần load config (Player, Enemy, etc.)
  */
 @ccclass('ConfigLoader')
@@ -17,33 +17,18 @@ export class ConfigLoader extends Component {
     private static _sharedConfigData: any = null;
     private static _sharedConfigAsset: JsonAsset = null;
 
-    @property({
-        type: JsonAsset,
-        visible: true,
-        serializable: true,
-        tooltip: 'JSON Asset chứa config data (share cho tất cả ConfigLoader)'
-    })
-    public configAsset: JsonAsset | null = null;
+    @property(JsonAsset)
+    public configAsset: JsonAsset = null;
 
-    @property({
-        type: JsonAsset,
-        visible: true,
-        serializable: true,
-        tooltip: 'JSON Asset chứa partial config để update (merge vào config chính)'
-    })
-    public updateConfigAsset: JsonAsset | null = null;
-
-    @property({
-        tooltip: 'Path đến config trong JSON file (VD: "player", "enemy/squid")'
-    })
-    public configPath: string = '';
+    @property(JsonAsset)
+    public updateConfigAsset: JsonAsset = null;
 
     @property({
         tooltip: 'Tự động load và apply config khi start'
     })
     public autoLoadOnStart: boolean = true;
 
-    protected start(): void {
+    protected onLoad(): void {
         if (this.autoLoadOnStart) {
             this.loadAndApplyConfig();
         }
@@ -64,14 +49,25 @@ export class ConfigLoader extends Component {
         // Tìm controller trên cùng node này
         const controller = this._findConfigurableController();
         if (!controller) {
-            console.warn(`[ConfigLoader] No IConfigurable controller found on node "${this.node.name}"`);
+            console.warn(`[ConfigLoader] No IConfig controller found on node "${this.node.name}"`);
             return;
         }
 
-        // Lấy config theo configPath
-        const configData = this._getConfigByPath(ConfigLoader._sharedConfigData, this.configPath);
+        // Lấy configPath từ controller (REQUIRED)
+        const configPath = controller.configPath;
+
+        // Kiểm tra configPath có được set không
+        if (!configPath || configPath === '') {
+            console.error(`[ConfigLoader] configPath is REQUIRED but not set on component "${controller.constructor.name}"!`);
+            console.error(`[ConfigLoader] Please add: public readonly configPath = "your/path/here";`);
+            return;
+        }
+
+        // Lấy config data theo path
+        const configData = this._getConfigByPath(ConfigLoader._sharedConfigData, configPath);
         if (!configData) {
-            console.warn(`[ConfigLoader] Config not found at path: "${this.configPath}"`);
+            console.error(`[ConfigLoader] Config not found at path: "${configPath}"`);
+            console.error(`[ConfigLoader] Available root keys:`, Object.keys(ConfigLoader._sharedConfigData));
             return;
         }
 
@@ -111,15 +107,15 @@ export class ConfigLoader extends Component {
     }
 
     /**
-     * Tìm IConfigurable controller trên CÙNG node này
+     * Tìm IConfig controller trên CÙNG node này
      */
-    private _findConfigurableController(): IConfigurable | null {
+    private _findConfigurableController(): IConfig | null {
         const components = this.node.getComponents(Component);
 
         for (const comp of components) {
-            // Check nếu component có _keyToVariable property (implement IConfigurable)
+            // Check nếu component có _keyToVariable property (implement IConfig)
             if ('_keyToVariable' in comp) {
-                return comp as unknown as IConfigurable;
+                return comp as unknown as IConfig;
             }
         }
 
@@ -128,12 +124,16 @@ export class ConfigLoader extends Component {
 
     /**
      * Lấy config data theo path (hỗ trợ nested path với delimiter '/')
+     * Path REQUIRED - không hỗ trợ auto-detect
      */
     private _getConfigByPath(configData: any, path: string): any {
+        // Path rỗng → return null (không auto-detect)
         if (!path || path === '') {
-            return configData;
+            console.error(`[ConfigLoader]<_getConfigByPath> Path is required!`);
+            return null;
         }
 
+        // Xử lý path với delimiter '/'
         const keys = path.split('/');
         let current = configData;
 
@@ -148,46 +148,21 @@ export class ConfigLoader extends Component {
     }
 
     /**
-     * Apply config data vào controller thông qua IConfigurable interface
+     * Apply config data vào controller thông qua IConfig interface
      */
-    private _applyConfigToController(controller: IConfigurable, configData: any): void {
+    private _applyConfigToController(controller: IConfig, configData: any): void {
         const keyMapping = controller._keyToVariable;
         const validKeys = Object.keys(keyMapping);
-
-        let setCount = 0;
         for (const key of validKeys) {
             if (configData.hasOwnProperty(key)) {
                 const variableName = keyMapping[key];
                 const value = configData[key];
 
                 (controller as any)[variableName] = value;
-                setCount++;
             }
         }
 
 
-    }
-
-    /**
-     * Lấy config value theo path (public API cho external usage)
-     */
-    public static getConfigValue(path: string): any {
-        if (!ConfigLoader._sharedConfigData) {
-            console.warn('[ConfigLoader] Config data not loaded yet');
-            return null;
-        }
-
-        const keys = path.split('/');
-        let current = ConfigLoader._sharedConfigData;
-
-        for (const key of keys) {
-            if (!current || !current.hasOwnProperty(key)) {
-                return null;
-            }
-            current = current[key];
-        }
-
-        return current;
     }
 
     /**
@@ -196,40 +171,24 @@ export class ConfigLoader extends Component {
      * ASYNC - Đợi file operations hoàn thành
      */
     public async updateConfig(): Promise<void> {
-        console.log('[ConfigLoader] ========== updateConfig() START ==========');
-        console.log('[ConfigLoader] this.updateConfigAsset:', this.updateConfigAsset);
-        console.log('[ConfigLoader] this.configAsset:', this.configAsset);
-
         if (!this.updateConfigAsset) {
-            console.error('[ConfigLoader] ❌ updateConfigAsset is NULL - Assign update.json in Inspector!');
+            console.error('[ConfigLoader] updateConfigAsset is NULL - Assign update.json in Inspector!');
             return;
         }
 
         if (!this.configAsset) {
-            console.error('[ConfigLoader] ❌ configAsset is NULL - Assign game_config.json in Inspector!');
+            console.error('[ConfigLoader] configAsset is NULL - Assign game_config.json in Inspector!');
             return;
         }
-
-        console.log('[ConfigLoader] ✓ Both assets assigned, proceeding...');
 
         const updateData = this.updateConfigAsset.json;
         const baseData = this.configAsset.json;
 
-        console.log('[ConfigLoader] === Before Merge ===');
-        console.log('[ConfigLoader] baseData:', JSON.stringify(baseData, null, 2));
-        console.log('[ConfigLoader] updateData:', JSON.stringify(updateData, null, 2));
-
         // Deep merge update data vào base config
         this._deepMerge(baseData, updateData);
 
-        console.log('[ConfigLoader] === After Merge ===');
-        console.log('[ConfigLoader] baseData (merged):', JSON.stringify(baseData, null, 2));
-
         // Save trở lại file (AWAIT)
-        console.log('[ConfigLoader] Calling _saveConfigToFile()...');
         await this._saveConfigToFile(baseData);
-
-        console.log('[ConfigLoader] ========== updateConfig() COMPLETE ==========');
     }
 
     /**
@@ -237,74 +196,52 @@ export class ConfigLoader extends Component {
      * ASYNC - Đợi file write operations
      */
     private async _saveConfigToFile(configData: any): Promise<void> {
-        console.log('[ConfigLoader] _saveConfigToFile() called');
-        console.log('[ConfigLoader] typeof Editor:', typeof Editor);
-
         // Check nếu đang chạy trong Editor
         if (typeof Editor === 'undefined') {
-            console.error('[ConfigLoader] ❌ Editor is undefined - Must run in Cocos Creator Editor!');
+            console.error('[ConfigLoader] Editor is undefined - Must run in Cocos Creator Editor!');
             throw new Error('Save only works in Editor mode');
         }
 
-        console.log('[ConfigLoader] ✓ Editor detected');
-
         const uuid = (this.configAsset as any)._uuid;
-        console.log('[ConfigLoader] Asset UUID:', uuid);
-
-        console.log('[ConfigLoader] Requesting asset info from Editor...');
 
         try {
             // AWAIT asset info request
             const assetInfo: any = await Editor.Message.request('asset-db', 'query-asset-info', uuid);
-            console.log('[ConfigLoader] Asset info received:', assetInfo);
 
             if (!assetInfo || !assetInfo.source) {
                 throw new Error('Cannot get asset file path');
             }
 
             let filePath = assetInfo.source;
-            console.log('[ConfigLoader] Original file path:', filePath);
 
             // Convert db:// path sang absolute path
             if (filePath.startsWith('db:/')) {
                 const path = require('path');
                 const relativePath = filePath.substring(4).replace(/\//g, path.sep);
                 filePath = path.join(Editor.Project.path, relativePath);
-                console.log('[ConfigLoader] Converted to absolute path:', filePath);
             }
 
             // Save JSON với format đẹp
             const jsonString = JSON.stringify(configData, null, 4);
-            console.log('[ConfigLoader] JSON string length:', jsonString.length);
 
             const fs = require('fs');
-            console.log('[ConfigLoader] Writing file...');
 
             // Synchronous write (fs.writeFileSync) - faster for small files
             fs.writeFileSync(filePath, jsonString, 'utf-8');
 
-            console.log(`[ConfigLoader] ✓✓✓ SAVED SUCCESSFULLY to: ${filePath}`);
-
             // Refresh asset database
-            console.log('[ConfigLoader] Refreshing asset database...');
             await Editor.Message.request('asset-db', 'refresh-asset', uuid);
 
             // Update shared data
             ConfigLoader._sharedConfigData = configData;
-            console.log('[ConfigLoader] Updated shared config data');
 
             // Re-apply config (only if game is running)
             if (this.isValid) {
-                console.log('[ConfigLoader] Re-applying config to controller...');
                 this.loadAndApplyConfig();
-            } else {
-                console.log('[ConfigLoader] Game not running, skip re-apply');
             }
 
-            console.log('[ConfigLoader] ========== SAVE COMPLETE ==========');
-
         } catch (err: any) {
-            console.error('[ConfigLoader] ❌❌❌ SAVE FAILED:', err);
+            console.error('[ConfigLoader] SAVE FAILED:', err);
             console.error('[ConfigLoader] Error message:', err.message);
             console.error('[ConfigLoader] Error stack:', err.stack);
             throw err;

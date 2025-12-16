@@ -30,7 +30,6 @@ export class ObjectPoolling extends Component {
         if (!poolContainer) {
             poolContainer = new Node(containerName);
             poolContainer.parent = trunkNode;
-            console.log(`Đã tạo pool container: ${containerName}`);
         }
 
         return poolContainer;

@@ -1,12 +1,12 @@
 import { _decorator, Component } from 'cc';
 import { UIManager } from '../../../UI/Script/UIManager';
 import { GameManager } from '../../../Core/GameManager';
-import { IConfigurable } from 'db://assets/Core/Config/IConfigurable';
+import { IConfig } from 'db://assets/Core/Config/IConfig';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerController')
-export class PlayerController extends Component implements IConfigurable {
+export class PlayerController extends Component implements IConfig {
 
     @property({ tooltip: 'Speed hiện tại' })
     protected _speed: number = 15;
@@ -38,6 +38,8 @@ export class PlayerController extends Component implements IConfigurable {
         "maxEXP": "_maxEXP",
         "speed": "_speed"
     };
+
+    public readonly configPath = "player/playerStats";
 
     protected onLoad(): void {
         if (!PlayerController._instance) {
