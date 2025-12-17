@@ -1,6 +1,6 @@
 import { _decorator } from 'cc';
 import { SpwanOnCircle } from '../../../Core/SpwanOnCircle';
-import { SquidController } from '../SquidController';
+import { SquidController } from './SquidController';
 
 const { ccclass, property } = _decorator;
 

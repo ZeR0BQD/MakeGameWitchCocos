@@ -1,5 +1,5 @@
 import { _decorator, Component, Collider2D, Layers, Node, Contact2DType, RigidBody2D, IPhysics2DContact } from 'cc';
-import { PlayerController } from '../../Player/Script/Core/PlayerController';
+import { PlayerController } from '../../../Player/Script/Core/PlayerController';
 import { SquidController } from './SquidController';
 
 const { ccclass, property } = _decorator;

@@ -9,7 +9,7 @@ const { ccclass, property } = _decorator;
 export class SpawnSword extends SpwanOnCircle {
     @property({ type: CCInteger }) public numberOfSwords: number = 3;
     @property public distanceSpawn: number = 100;
-    @property protected _timeSpawn: number = 0;
+    @property({ override: true }) protected _timeSpawn: number = 0;
 
     private _activeSwords: Node[] = [];
     private _lastSwordCount: number = 0;

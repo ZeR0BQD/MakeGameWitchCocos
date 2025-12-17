@@ -1,5 +1,5 @@
 import { _decorator, Component, Node, Vec2, RigidBody2D } from 'cc';
-import { Movement } from '../../Player/Script/Core/Movement';
+import { Movement } from '../../../Player/Script/Core/Movement';
 import { ISquidState } from './States/ISquidState';
 import { SquidMoveState } from './States/SquidMoveState';
 import { SquidAttackState } from './States/SquidAttackState';

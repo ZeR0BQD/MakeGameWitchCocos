@@ -15,13 +15,16 @@ export class CardUpgrade extends Component implements IConfig {
         "speed": "_speed"
     };
 
-    // Card upgrade stats - Sẽ được load từ config
+    public pathUpgrade: string = "upgradeBaseStats/cardUpgradeLv1";
+
+    public get configPath(): string {
+        return `cardUpgrade/${this.pathUpgrade}`;
+    }
+
+    // Card upgrade stats sẽ được load từ config
     private _maxHP: number = 0;
     private _maxEXP: number = 0;
     private _speed: number = 0;
-
-    // Test variable để verify config path được set từ Inspector
-    public pathConfig: string = "";
 
     private _instanceCard: InstanceCard = null;
 
@@ -30,6 +33,10 @@ export class CardUpgrade extends Component implements IConfig {
         if (button) {
             button.node.on(Button.EventType.CLICK, this.onCardClick, this);
         }
+    }
+
+    public setInstanceCard(instanceCard: InstanceCard): void {
+        this._instanceCard = instanceCard;
     }
 
     protected start(): void {
@@ -41,10 +48,6 @@ export class CardUpgrade extends Component implements IConfig {
         if (button) {
             button.node.off(Button.EventType.CLICK, this.onCardClick, this);
         }
-    }
-
-    public setInstanceCard(instanceCard: InstanceCard): void {
-        this._instanceCard = instanceCard;
     }
 
     private onCardClick(): void {
@@ -59,6 +62,4 @@ export class CardUpgrade extends Component implements IConfig {
             upgradeManager.resumeGame();
         }
     }
-
-
 }

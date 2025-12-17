@@ -12,7 +12,9 @@ declare const require: any;
  * Attach lên node cần load config (Player, Enemy, etc.)
  */
 @ccclass('ConfigLoader')
-export class ConfigLoader extends Component {
+export class ConfigLoader extends Component implements IConfig {
+    _keyToVariable: Record<string, string>;
+    configPath?: string;
 
     private static _sharedConfigData: any = null;
     private static _sharedConfigAsset: JsonAsset = null;
