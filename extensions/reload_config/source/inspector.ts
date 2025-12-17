@@ -53,6 +53,13 @@ export const template = `
     
     <div id="dropdowns-container"></div>
     <div id="values-container"></div>
+    
+    <ui-prop style="margin-top: 10px;">
+        <ui-button class="green" id="save-config-btn" style="width: 100%;">
+            <ui-icon value="save"></ui-icon>
+            Save Config
+        </ui-button>
+    </ui-prop>
 </ui-section>
 `;
 
@@ -62,6 +69,7 @@ export const $ = {
     clearBtn: '#clear-btn',
     loadBtn: '#load-btn',
     updateBtn: '#update-btn',
+    saveConfigBtn: '#save-config-btn',
     statusProp: '#status-prop',
     statusText: '#status-text',
     breadcrumbProp: '#breadcrumb-prop',
@@ -99,7 +107,11 @@ export function ready(this: any) {
     }
 
     if ((_panel as any).$.updateBtn) {
-        (_panel as any).$.updateBtn.addEventListener('click', onUpdateConfig);
+        (_panel as any).$.updateBtn.addEventListener('click', onUpdateAndSave);
+    }
+
+    if ((_panel as any).$.saveConfigBtn) {
+        (_panel as any).$.saveConfigBtn.addEventListener('click', onSaveConfig);
     }
 }
 
@@ -138,10 +150,222 @@ function onClear() {
     (_panel as any).$.statusProp.hidden = true;
 }
 
-function onLoadConfig() {
-    // Đọc UUID từ component dump
-    const assetUUID = _panel.dump?.value?.configAsset?.value?.uuid;
+/**
+ * Helper: Show error message in status
+ */
+function showError(message: string) {
+    (_panel as any).$.statusProp.hidden = false;
+    (_panel as any).$.statusText.textContent = message;
+    (_panel as any).$.statusText.style.color = '#F44336';
+}
 
+/**
+ * Helper: Show success message in status
+ */
+function showSuccess(message: string) {
+    (_panel as any).$.statusProp.hidden = false;
+    (_panel as any).$.statusText.textContent = message;
+    (_panel as any).$.statusText.style.color = '#4CAF50';
+}
+
+/**
+ * Helper: Save config data to file
+ */
+async function saveConfigToFile(assetUUID: string, configData: any): Promise<void> {
+    // 1. Query asset info
+    const assetInfo: any = await (Editor.Message.request as any)('asset-db', 'query-asset-info', assetUUID);
+
+    if (!assetInfo || !assetInfo.source) {
+        throw new Error('Cannot get asset file path');
+    }
+
+    let filePath = assetInfo.source;
+
+    // 2. Convert db:// path to absolute path
+    if (filePath.startsWith('db:/')) {
+        const relativePath = filePath.substring(4).replace(/\//g, path.sep);
+        filePath = path.join(Editor.Project.path, relativePath);
+    }
+
+    console.log('[Inspector] Saving to file:', filePath);
+
+    // 3. Write file
+    const jsonString = JSON.stringify(configData, null, 4);
+    fs.writeFileSync(filePath, jsonString, 'utf-8');
+
+    console.log('[Inspector] File written successfully');
+
+    // 4. Refresh asset database
+    await (Editor.Message.request as any)('asset-db', 'refresh-asset', assetUUID);
+
+    console.log('[Inspector] Asset database refreshed');
+}
+
+/**
+ * Update & Save: Merge update.json vào game_config.json
+ */
+async function onUpdateAndSave() {
+    console.log('[Inspector] onUpdateAndSave() started');
+
+    try {
+        // 1. Validate assets
+        const configAssetValue = _panel.dump?.value?.configAsset?.value;
+        const updateAssetValue = _panel.dump?.value?.updateConfigAsset?.value;
+
+        if (!configAssetValue) {
+            showError('Error: Config Asset required');
+            console.error('[Inspector] configAsset is NULL');
+            return;
+        }
+
+        if (!updateAssetValue) {
+            showError('Error: Update Config Asset required');
+            console.error('[Inspector] updateConfigAsset is NULL');
+            return;
+        }
+
+        // 2. Read JSON data
+        console.log('[Inspector] Reading config data...');
+
+        // 2a. Get config data (check if .json available, else read file)
+        let configData: any;
+        if (configAssetValue.json) {
+            configData = JSON.parse(JSON.stringify(configAssetValue.json));
+            console.log('[Inspector] Using configAsset.json from dump');
+        } else {
+            // Query asset info and read file
+            const assetInfo: any = await (Editor.Message.request as any)('asset-db', 'query-asset-info', configAssetValue.uuid);
+            let filePath = assetInfo.source;
+
+            if (filePath.startsWith('db:/')) {
+                const relativePath = filePath.substring(4).replace(/\//g, path.sep);
+                filePath = path.join(Editor.Project.path, relativePath);
+            }
+
+            const jsonContent = fs.readFileSync(filePath, 'utf-8');
+            configData = JSON.parse(jsonContent);
+            console.log('[Inspector] Read configAsset from file');
+        }
+
+        // 2b. Get update data (check if .json available, else read file)
+        let updateData: any;
+        if (updateAssetValue.json) {
+            updateData = updateAssetValue.json;
+            console.log('[Inspector] Using updateAsset.json from dump');
+        } else {
+            // Query asset info and read file
+            const assetInfo: any = await (Editor.Message.request as any)('asset-db', 'query-asset-info', updateAssetValue.uuid);
+            let filePath = assetInfo.source;
+
+            if (filePath.startsWith('db:/')) {
+                const relativePath = filePath.substring(4).replace(/\//g, path.sep);
+                filePath = path.join(Editor.Project.path, relativePath);
+            }
+
+            const jsonContent = fs.readFileSync(filePath, 'utf-8');
+            updateData = JSON.parse(jsonContent);
+            console.log('[Inspector] Read updateAsset from file');
+        }
+
+        console.log('[Inspector] Config data:', configData);
+        console.log('[Inspector] Update data:', updateData);
+
+        // 3. Deep merge
+        console.log('[Inspector] Starting deep merge...');
+        deepMerge(configData, updateData);
+        console.log('[Inspector] Merge completed:', configData);
+
+        // 4. Save to file
+        await saveConfigToFile(configAssetValue.uuid, configData);
+
+        // 5. Update panel state
+        _panel.configData = configData;
+        _panel.editedData = JSON.parse(JSON.stringify(configData));
+        _panel.selectedPath = [];
+        _panel.isModified = false;
+
+        // 6. Rebuild cache and UI
+        buildLevelsCache(_panel.editedData);
+        renderLevel1();
+
+        showSuccess('Updated & Saved ✓');
+        console.log('[Inspector] onUpdateAndSave() completed');
+
+    } catch (err: any) {
+        console.error('[Inspector] Update & Save failed:', err);
+        console.error('[Inspector] Error message:', err.message);
+        showError('Update & Save Failed ✗');
+    }
+}
+
+
+/**
+ * Save Config: Save editedData từ Config Browser vào game_config.json
+ */
+async function onSaveConfig() {
+    console.log('[Inspector] onSaveConfig() started');
+
+    try {
+        // 1. Validate editedData
+        if (!_panel.editedData) {
+            showError('Error: No config loaded');
+            console.error('[Inspector] editedData is NULL');
+            return;
+        }
+
+        const configAssetValue = _panel.dump?.value?.configAsset?.value;
+        if (!configAssetValue) {
+            showError('Error: Config Asset required');
+            console.error('[Inspector] configAsset is NULL');
+            return;
+        }
+
+        console.log('[Inspector] Saving editedData:', _panel.editedData);
+
+        // 2. Save editedData to file
+        await saveConfigToFile(configAssetValue.uuid, _panel.editedData);
+
+        // 3. Update panel state
+        _panel.configData = JSON.parse(JSON.stringify(_panel.editedData));
+        _panel.isModified = false;
+
+        showSuccess('Config Saved ✓');
+        console.log('[Inspector] onSaveConfig() completed');
+
+    } catch (err: any) {
+        console.error('[Inspector] Save Config failed:', err);
+        console.error('[Inspector] Error message:', err.message);
+        showError('Save Config Failed ✗');
+    }
+}
+
+
+function onLoadConfig() {
+    // Kiểm tra xem đã kéo config asset vào chưa (prioritize existing asset)
+    const configAssetValue = _panel.dump?.value?.configAsset?.value;
+    const updateAssetValue = _panel.dump?.value?.updateConfigAsset?.value;
+
+    // Nếu đã có configAsset hoặc updateAsset (không null), sử dụng luôn
+    let assetUUID: string | null = null;
+    let configData: any = null;
+
+    if (configAssetValue && configAssetValue.uuid) {
+        // Đã kéo configAsset vào → lấy JSON từ asset đó luôn
+        assetUUID = configAssetValue.uuid;
+        if (configAssetValue.json) {
+            configData = configAssetValue.json;
+            console.log('[Inspector] Sử dụng configAsset đã kéo vào (không query lại)');
+        }
+    } else if (updateAssetValue && updateAssetValue.uuid) {
+        // Nếu chưa có configAsset nhưng có updateAsset → dùng updateAsset
+        assetUUID = updateAssetValue.uuid;
+        if (updateAssetValue.json) {
+            configData = updateAssetValue.json;
+            console.log('[Inspector] Sử dụng updateConfigAsset đã kéo vào (không query lại)');
+        }
+    }
+
+    // Nếu không có asset nào được kéo vào
     if (!assetUUID) {
         (_panel as any).$.statusProp.hidden = false;
         (_panel as any).$.statusText.textContent = 'Error: Please drag JSON file to Config Asset';
@@ -161,9 +385,32 @@ function onLoadConfig() {
         name: 'loadAndApplyConfig',
         args: []
     }).then(() => {
-        // 2. Query asset info
+        // 2. Nếu đã có configData từ asset (đã kéo vào), skip query và read file
+        if (configData) {
+            // Build config browser trực tiếp
+            _panel.configData = configData;
+            _panel.editedData = JSON.parse(JSON.stringify(configData));
+            _panel.selectedPath = [];
+            _panel.isModified = false;
+
+            buildLevelsCache(_panel.editedData);
+
+            (_panel as any).$.statusProp.hidden = false;
+            (_panel as any).$.statusText.textContent = 'Loaded ✓';
+            (_panel as any).$.statusText.style.color = '#4CAF50';
+
+            renderLevel1();
+            return Promise.resolve(); // Skip .then() chain
+        }
+
+        // 3. Nếu chưa có configData, query asset info (fallback logic cũ)
         return (Editor.Message.request as any)('asset-db', 'query-asset-info', assetUUID);
     }).then((assetInfo: any) => {
+        // Nếu đã load từ configData, skip bước này
+        if (configData) {
+            return;
+        }
+
         if (!assetInfo || !assetInfo.source) {
             throw new Error('Asset not found');
         }
@@ -176,11 +423,11 @@ function onLoadConfig() {
             filePath = path.join(Editor.Project.path, relativePath);
         }
 
-        // 3. Read JSON file
+        // Read JSON file
         const jsonContent = fs.readFileSync(filePath, 'utf-8');
-        const configData = JSON.parse(jsonContent);
+        configData = JSON.parse(jsonContent);
 
-        // 4. Build config browser
+        // Build config browser
         _panel.configData = configData;
         _panel.editedData = JSON.parse(JSON.stringify(configData));
         _panel.selectedPath = [];
@@ -202,60 +449,7 @@ function onLoadConfig() {
     });
 }
 
-async function onUpdateConfig() {
-    // Đọc UUID từ dump
-    const configAssetUUID = _panel.dump?.value?.configAsset?.value?.uuid;
 
-    if (!configAssetUUID) {
-        (_panel as any).$.statusProp.hidden = false;
-        (_panel as any).$.statusText.textContent = 'Error: Config Asset required';
-        (_panel as any).$.statusText.style.color = '#F44336';
-        return;
-    }
-
-    // Check if there are changes to save
-    if (!_panel.editedData) {
-        (_panel as any).$.statusProp.hidden = false;
-        (_panel as any).$.statusText.textContent = 'Error: No config loaded';
-        (_panel as any).$.statusText.style.color = '#F44336';
-        return;
-    }
-
-    try {
-        // 1. Get config file path
-        const configAssetInfo: any = await (Editor.Message.request as any)('asset-db', 'query-asset-info', configAssetUUID);
-
-        let configFilePath = configAssetInfo.source;
-
-        // Convert db:// path
-        if (configFilePath.startsWith('db:/')) {
-            const relativePath = configFilePath.substring(4).replace(/\//g, path.sep);
-            configFilePath = path.join(Editor.Project.path, relativePath);
-        }
-
-        // 2. Save editedData to file
-        const jsonString = JSON.stringify(_panel.editedData, null, 4);
-        fs.writeFileSync(configFilePath, jsonString, 'utf-8');
-
-        // 3. Refresh asset database
-        await (Editor.Message.request as any)('asset-db', 'refresh-asset', configAssetUUID);
-
-        // 4. Update state
-        _panel.configData = JSON.parse(JSON.stringify(_panel.editedData));
-        _panel.isModified = false;
-
-        // 5. Update UI
-        (_panel as any).$.statusProp.hidden = false;
-        (_panel as any).$.statusText.textContent = 'Saved ✓';
-        (_panel as any).$.statusText.style.color = '#4CAF50';
-
-    } catch (err: any) {
-        console.error('[Inspector] Save failed:', err);
-        (_panel as any).$.statusProp.hidden = false;
-        (_panel as any).$.statusText.textContent = 'Save Failed ✗';
-        (_panel as any).$.statusText.style.color = '#F44336';
-    }
-}
 
 
 /**
