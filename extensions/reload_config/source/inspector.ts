@@ -187,26 +187,18 @@ async function saveConfigToFile(assetUUID: string, configData: any): Promise<voi
         filePath = path.join(Editor.Project.path, relativePath);
     }
 
-    console.log('[Inspector] Saving to file:', filePath);
-
     // 3. Write file
     const jsonString = JSON.stringify(configData, null, 4);
     fs.writeFileSync(filePath, jsonString, 'utf-8');
 
-    console.log('[Inspector] File written successfully');
-
     // 4. Refresh asset database
     await (Editor.Message.request as any)('asset-db', 'refresh-asset', assetUUID);
-
-    console.log('[Inspector] Asset database refreshed');
 }
 
 /**
  * Update & Save: Merge update.json vào game_config.json
  */
 async function onUpdateAndSave() {
-    console.log('[Inspector] onUpdateAndSave() started');
-
     try {
         // 1. Validate assets
         const configAssetValue = _panel.dump?.value?.configAsset?.value;
@@ -225,13 +217,11 @@ async function onUpdateAndSave() {
         }
 
         // 2. Read JSON data
-        console.log('[Inspector] Reading config data...');
 
         // 2a. Get config data (check if .json available, else read file)
         let configData: any;
         if (configAssetValue.json) {
             configData = JSON.parse(JSON.stringify(configAssetValue.json));
-            console.log('[Inspector] Using configAsset.json from dump');
         } else {
             // Query asset info and read file
             const assetInfo: any = await (Editor.Message.request as any)('asset-db', 'query-asset-info', configAssetValue.uuid);
@@ -244,14 +234,12 @@ async function onUpdateAndSave() {
 
             const jsonContent = fs.readFileSync(filePath, 'utf-8');
             configData = JSON.parse(jsonContent);
-            console.log('[Inspector] Read configAsset from file');
         }
 
         // 2b. Get update data (check if .json available, else read file)
         let updateData: any;
         if (updateAssetValue.json) {
             updateData = updateAssetValue.json;
-            console.log('[Inspector] Using updateAsset.json from dump');
         } else {
             // Query asset info and read file
             const assetInfo: any = await (Editor.Message.request as any)('asset-db', 'query-asset-info', updateAssetValue.uuid);
@@ -264,16 +252,10 @@ async function onUpdateAndSave() {
 
             const jsonContent = fs.readFileSync(filePath, 'utf-8');
             updateData = JSON.parse(jsonContent);
-            console.log('[Inspector] Read updateAsset from file');
         }
 
-        console.log('[Inspector] Config data:', configData);
-        console.log('[Inspector] Update data:', updateData);
-
         // 3. Deep merge
-        console.log('[Inspector] Starting deep merge...');
         deepMerge(configData, updateData);
-        console.log('[Inspector] Merge completed:', configData);
 
         // 4. Save to file
         await saveConfigToFile(configAssetValue.uuid, configData);
@@ -289,11 +271,8 @@ async function onUpdateAndSave() {
         renderLevel1();
 
         showSuccess('Updated & Saved ✓');
-        console.log('[Inspector] onUpdateAndSave() completed');
-
     } catch (err: any) {
         console.error('[Inspector] Update & Save failed:', err);
-        console.error('[Inspector] Error message:', err.message);
         showError('Update & Save Failed ✗');
     }
 }
@@ -303,8 +282,6 @@ async function onUpdateAndSave() {
  * Save Config: Save editedData từ Config Browser vào game_config.json
  */
 async function onSaveConfig() {
-    console.log('[Inspector] onSaveConfig() started');
-
     try {
         // 1. Validate editedData
         if (!_panel.editedData) {
@@ -320,8 +297,6 @@ async function onSaveConfig() {
             return;
         }
 
-        console.log('[Inspector] Saving editedData:', _panel.editedData);
-
         // 2. Save editedData to file
         await saveConfigToFile(configAssetValue.uuid, _panel.editedData);
 
@@ -330,11 +305,8 @@ async function onSaveConfig() {
         _panel.isModified = false;
 
         showSuccess('Config Saved ✓');
-        console.log('[Inspector] onSaveConfig() completed');
-
     } catch (err: any) {
         console.error('[Inspector] Save Config failed:', err);
-        console.error('[Inspector] Error message:', err.message);
         showError('Save Config Failed ✗');
     }
 }
@@ -354,14 +326,12 @@ function onLoadConfig() {
         assetUUID = configAssetValue.uuid;
         if (configAssetValue.json) {
             configData = configAssetValue.json;
-            console.log('[Inspector] Sử dụng configAsset đã kéo vào (không query lại)');
         }
     } else if (updateAssetValue && updateAssetValue.uuid) {
         // Nếu chưa có configAsset nhưng có updateAsset → dùng updateAsset
         assetUUID = updateAssetValue.uuid;
         if (updateAssetValue.json) {
             configData = updateAssetValue.json;
-            console.log('[Inspector] Sử dụng updateConfigAsset đã kéo vào (không query lại)');
         }
     }
 
@@ -448,8 +418,6 @@ function onLoadConfig() {
         (_panel as any).$.statusText.style.color = '#F44336';
     });
 }
-
-
 
 
 /**

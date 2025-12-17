@@ -161,30 +161,6 @@ export class ConfigLoader extends Component {
                 (controller as any)[variableName] = value;
             }
         }
-
-
-    }
-
-    /**
-     * Deep merge source vào target
-     * Chỉ override những key có trong source, giữ nguyên các key khác trong target
-     */
-    private _deepMerge(target: any, source: any): void {
-        for (const key in source) {
-            if (source.hasOwnProperty(key)) {
-                if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-                    // Nếu là object và chưa tồn tại trong target → tạo mới
-                    if (!target[key] || typeof target[key] !== 'object') {
-                        target[key] = {};
-                    }
-                    // Đệ quy merge vào object con
-                    this._deepMerge(target[key], source[key]);
-                } else {
-                    // Primitive value hoặc array → ghi đè trực tiếp
-                    target[key] = source[key];
-                }
-            }
-        }
     }
 
     /**
