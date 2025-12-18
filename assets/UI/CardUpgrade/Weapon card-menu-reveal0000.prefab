@@ -232,7 +232,6 @@
       "__expectedType__": "cc.JsonAsset"
     },
     "updateConfigAsset": null,
-    "configPath": "",
     "autoLoadOnStart": true,
     "_id": ""
   },

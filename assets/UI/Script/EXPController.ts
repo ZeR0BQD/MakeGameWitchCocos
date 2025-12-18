@@ -38,11 +38,7 @@ export class EXPController extends Component implements IUISubscriber {
         }
 
         if (data.level > this._lastLevel) {
-            this._onLevelUp(data.level);
             this._lastLevel = data.level;
         }
-    }
-
-    private _onLevelUp(newLevel: number): void {
     }
 }

@@ -7,21 +7,75 @@
         }
     },
     "cardUpgrade": {
-        "upgradeBaseStats": {
-            "cardUpgradeLv1": {
-                "maxHP": 20,
-                "maxEXP": -10,
+        "cardUpgradeHP": {
+            "common": {
+                "maxHP": 20
+            },
+            "rare": {
+                "maxHP": 40
+            },
+            "epic": {
+                "maxHP": 80
+            }
+        },
+        "cardUpgradeEXP": {
+            "common": {
+                "maxEXP": -10
+            },
+            "rare": {
+                "maxEXP": -20
+            },
+            "epic": {
+                "maxEXP": -40
+            }
+        },
+        "cardUpgradeSpeed": {
+            "common": {
                 "speed": 2
             },
-            "cardUpgradeLv2": {
-                "maxHP": 40,
-                "maxEXP": -20,
+            "rare": {
                 "speed": 5
             },
-            "cardUpgradeLv3": {
-                "maxHP": 80,
-                "maxEXP": -40,
+            "epic": {
                 "speed": 10
+            }
+        },
+        "dropRateTable": {
+            "level_1_2": {
+                "common": 80,
+                "rare": 20,
+                "epic": 0
+            },
+            "level_3_4": {
+                "common": 60,
+                "rare": 35,
+                "epic": 5
+            },
+            "level_5_6": {
+                "common": 40,
+                "rare": 45,
+                "epic": 15
+            },
+            "level_7_8": {
+                "common": 25,
+                "rare": 50,
+                "epic": 25
+            },
+            "level_9_plus": {
+                "common": 15,
+                "rare": 45,
+                "epic": 40
+            }
+        }
+    },
+    "enemy": {
+        "squid": {
+            "squidStats": {
+                "maxHealth": 10,
+                "expReward": 50,
+                "speed": 8,
+                "attackRange": 175,
+                "damage": 25
             }
         }
     }

@@ -1,8 +1,9 @@
-import { _decorator, Component, Button } from 'cc';
-import { PlayerController } from 'db://assets/Player/Script/Core/PlayerController';
+import { _decorator, Component, Button } from 'cc'; decodeURIComponent
 import { InstanceCard } from './InstanceCard';
 import { UpgradeManager } from './UpgradeManager';
 import { IConfig } from 'db://assets/Core/Config/IConfig';
+import { PlayerController } from '../../Player/Script/Core/PlayerController';
+import { ConfigLoader } from '../Config/ConfigLoader';
 
 const { ccclass } = _decorator;
 
@@ -15,16 +16,21 @@ export class CardUpgrade extends Component implements IConfig {
         "speed": "_speed"
     };
 
-    public pathUpgrade: string = "upgradeBaseStats/cardUpgradeLv1";
-
-    public get configPath(): string {
-        return `cardUpgrade/${this.pathUpgrade}`;
-    }
-
     // Card upgrade stats sẽ được load từ config
     private _maxHP: number = 0;
     private _maxEXP: number = 0;
     private _speed: number = 0;
+
+    // Dynamic card data (injected từ InstanceCard)
+    private _cardType: string = ""; // "cardUpgradeHP", "cardUpgradeEXP", "cardUpgradeSpeed"
+    private _rarity: string = ""; // "common", "rare", "epic"
+
+    public get configPath(): string {
+        if (!this._cardType || !this._rarity) {
+            return "";
+        }
+        return `cardUpgrade/${this._cardType}/${this._rarity}`;
+    }
 
     private _instanceCard: InstanceCard = null;
 
@@ -39,8 +45,32 @@ export class CardUpgrade extends Component implements IConfig {
         this._instanceCard = instanceCard;
     }
 
+    /**
+     * Set card data từ InstanceCard
+     */
+    public setCardData(cardType: string, rarity: string): void {
+        this._cardType = cardType;
+        this._rarity = rarity;
+
+        // Load config sau khi có đủ data
+        this._loadConfig();
+    }
+
+    /**
+     * Load config từ ConfigLoader
+     */
+    private _loadConfig(): void {
+        const configLoader = this.getComponent(ConfigLoader);
+        if (configLoader) {
+            configLoader.loadAndApplyConfig();
+        }
+    }
+
     protected start(): void {
-        // Config loaded via ConfigLoader
+        if (!this._cardType || !this._rarity) {
+            console.error("[CardUpgrade] cardType and rarity are required! Call setCardData() first.");
+            return;
+        }
     }
 
     onDestroy(): void {
@@ -51,7 +81,8 @@ export class CardUpgrade extends Component implements IConfig {
     }
 
     private onCardClick(): void {
-        // TODO: Implement logic với ConfigLoader
+
+        this._applyUpgradeToPlayer();
 
         if (this._instanceCard) {
             this._instanceCard.hideCards();
@@ -60,6 +91,29 @@ export class CardUpgrade extends Component implements IConfig {
         const upgradeManager = UpgradeManager.instance;
         if (upgradeManager) {
             upgradeManager.resumeGame();
+        }
+    }
+
+    /**
+     * Apply upgrade stats lên PlayerController
+     */
+    private _applyUpgradeToPlayer(): void {
+        const player = PlayerController._instance;
+        if (!player) {
+            return;
+        }
+
+        // Apply từng stat nếu có giá trị
+        if (this._maxHP !== 0) {
+            player.applyUpgrade({ type: 'MAX_HEALTH', value: this._maxHP });
+        }
+
+        if (this._maxEXP !== 0) {
+            player.applyUpgrade({ type: 'MAX_EXP', value: this._maxEXP });
+        }
+
+        if (this._speed !== 0) {
+            player.applyUpgrade({ type: 'SPEED', value: this._speed });
         }
     }
 }

@@ -4,7 +4,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass('Movement')
 export class Movement extends Component {
-    public static instance: Movement;
+    public static _instance: Movement = null;
     protected direcMove: Vec3 = new Vec3(0, 0, 0);
     public get DirecMove(): Vec3 {
         return this.direcMove;
@@ -15,13 +15,12 @@ export class Movement extends Component {
     private _rigidBody: RigidBody2D = null;
 
     protected onLoad(): void {
-        if (!Movement.instance) {
-            Movement.instance = this;
-        } else {
+        if (Movement._instance != null) {
             this.destroy();
+            return;
         }
 
-
+        Movement._instance = this;
 
         this._rigidBody = this.getComponent(RigidBody2D);
         if (this._rigidBody) {

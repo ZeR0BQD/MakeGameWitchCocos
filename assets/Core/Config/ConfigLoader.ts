@@ -55,13 +55,13 @@ export class ConfigLoader extends Component implements IConfig {
             return;
         }
 
-        // Lấy configPath từ controller (REQUIRED)
+        // Lấy configPath từ controller
         const configPath = controller.configPath;
 
         // Kiểm tra configPath có được set không
+        // Nếu rỗng, skip loading (cho phép dynamic loading sau)
         if (!configPath || configPath === '') {
-            console.error(`[ConfigLoader] configPath is REQUIRED but not set on component "${controller.constructor.name}"!`);
-            console.error(`[ConfigLoader] Please add: public readonly configPath = "your/path/here";`);
+            // Không log error nữa, cho phép component load config sau
             return;
         }
 

@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Vec2 } from 'cc';
+import { _decorator, CCFloat, Vec2 } from 'cc';
 import { IDamageable } from 'db://assets/Enemy/IDamageable';
 import { PlayerController } from 'db://assets/Player/Script/Core/PlayerController';
 import { ObjectPoolling } from 'db://assets/Core/ObjectPoolling';
@@ -8,40 +8,52 @@ const { ccclass, property } = _decorator;
 
 @ccclass('SquidController')
 export class SquidController extends IDamageable {
-    @property protected maxHealth: number = 10;
-    @property protected expReward: number = 50;
-    @property({ type: CCInteger }) public speed: number = 8;
-    @property({ type: CCInteger }) public attackRange: number = 175;
-    @property({ type: CCInteger }) public damage: number = 25;
+    @property protected _maxHealth: number = 10;
+    @property protected _expReward: number = 50;
+    @property({ type: CCFloat }) public _speed: number = 8;
+    @property({ type: CCFloat }) public _attackRange: number = 120;  // Vùng chuyển sang tấn công
+    @property({ type: CCFloat }) public _patrolRange: number = 400;  // Vùng từ bỏ đuổi theo
+    @property({ type: CCFloat }) public _damage: number = 25;
 
-    protected currentHealth: number;
+    protected _currentHealth: number;
     private _pool: ObjectPoolling;
     private _stateMachine: SquidStateMachine;
 
+    // Mapping giữa config key và tên biến thực tế cho IConfig
+    public readonly _keyToVariable = {
+        "maxHealth": "_maxHealth",
+        "speed": "_speed",
+        "attackRange": "_attackRange",
+        "damage": "_damage",
+        "expReward": "_expReward"
+    };
+
+    public readonly configPath = "enemy/squid/squidStats";
+
     start() {
-        this.currentHealth = this.maxHealth;
+        this._currentHealth = this._maxHealth;
         this._stateMachine = this.getComponent(SquidStateMachine);
     }
 
     public init(poolInstance: ObjectPoolling): void {
         this._pool = poolInstance;
-        this.currentHealth = this.maxHealth;
+        this._currentHealth = this._maxHealth;
         this.reset();
     }
 
     private reset(): void {
-        this.currentHealth = this.maxHealth;
+        this._currentHealth = this._maxHealth;
 
         if (this._stateMachine) {
             if (this._stateMachine.rigidBody) {
                 this._stateMachine.rigidBody.linearVelocity = Vec2.ZERO;
             }
-            this._stateMachine.changeState(this._stateMachine.moveState);
+            this._stateMachine.changeState(this._stateMachine.patrolState);
         }
     }
 
     public takeDamage(amount: number): void {
-        this.currentHealth -= amount;
+        this._currentHealth -= amount;
 
         if (!this.isAlive()) {
             this.die();
@@ -49,17 +61,17 @@ export class SquidController extends IDamageable {
     }
 
     public getCurrentHealth(): number {
-        return this.currentHealth;
+        return this._currentHealth;
     }
 
     public isAlive(): boolean {
-        return this.currentHealth > 0;
+        return this._currentHealth > 0;
     }
 
     protected die(): void {
         const player = PlayerController._instance;
         if (player) {
-            player.addExpReward(this.expReward);
+            player.addExpReward(this._expReward);
         }
 
         if (this._pool) {

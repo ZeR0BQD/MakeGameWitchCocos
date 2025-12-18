@@ -152,6 +152,13 @@ export class PlayerController extends Component implements IConfig {
                 this._hp = this._maxHP;
                 this._publishHP();
                 break;
+            case 'MAX_EXP':
+                this._maxEXP += upgradeData.value;
+                this._publishEXP();
+                break;
+            case 'SPEED':
+                this._speed += upgradeData.value;
+                break;
         }
     }
 
@@ -163,7 +170,6 @@ export class PlayerController extends Component implements IConfig {
         this._hp = this._maxHP;
 
         this._publishHP();
-        this._publishEXP();
 
         this._triggerUpgrade();
     }

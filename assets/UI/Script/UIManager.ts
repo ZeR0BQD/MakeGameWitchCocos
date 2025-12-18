@@ -70,8 +70,4 @@ export class UIManager extends Component {
             }
         }
     }
-
-    public logSubscribers(): void {
-        // Debug method - empty
-    }
 }

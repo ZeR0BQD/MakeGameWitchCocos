@@ -1,9 +1,10 @@
 import { _decorator, Component, Node, Vec2, RigidBody2D } from 'cc';
-import { Movement } from '../../../Player/Script/Core/Movement';
+import { PlayerController } from '../../../Player/Script/Core/PlayerController';
 import { ISquidState } from './States/ISquidState';
 import { SquidMoveState } from './States/SquidMoveState';
 import { SquidAttackState } from './States/SquidAttackState';
 import { SquidController } from './SquidController';
+import { SquidPatrolState } from './States/SquidPatrolState';
 
 const { ccclass, property } = _decorator;
 
@@ -20,17 +21,22 @@ export class SquidStateMachine extends Component {
     public currentState: ISquidState = null;
     public moveState: SquidMoveState = new SquidMoveState();
     public attackState: SquidAttackState = new SquidAttackState();
+    public patrolState: SquidPatrolState = new SquidPatrolState();
 
     public get speed(): number {
-        return this._controller ? this._controller.speed : 0;
+        return this._controller ? this._controller._speed : 0;
     }
 
     public get attackRange(): number {
-        return this._controller ? this._controller.attackRange : 0;
+        return this._controller ? this._controller._attackRange : 0;
+    }
+
+    public get patrolRange(): number {
+        return this._controller ? this._controller._patrolRange : 0;
     }
 
     start() {
-        this.target = Movement.instance.node;
+        this.target = PlayerController._instance.node;
         this._controller = this.getComponent(SquidController);
 
         this._rigidBody = this.getComponent(RigidBody2D);
@@ -38,7 +44,7 @@ export class SquidStateMachine extends Component {
             this._rigidBody.fixedRotation = true;
         }
 
-        this.changeState(this.moveState);
+        this.changeState(this.patrolState);
     }
 
     update(deltaTime: number) {

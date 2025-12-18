@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Node, Prefab, Vec3, view, CCInteger } from 'cc';
+import { _decorator, Component, instantiate, Node, Prefab, Vec3, view, CCInteger, CCFloat } from 'cc';
 import { ObjectPoolling } from './ObjectPoolling';
 const { ccclass, property } = _decorator;
 
@@ -8,7 +8,7 @@ export class SpwanOnCircle extends Component {
     @property(Prefab) protected prefab: Prefab;
     @property(Node) protected target: Node;
     @property({ type: CCInteger }) protected _poolSize: number = 10;
-    @property protected _timeSpawn: number = 3;
+    @property({ type: CCFloat, override: true }) protected _timeSpawn: number = 3.0;
     protected _timer: number = 0;
     protected distanceSpawn: number;
     protected _pool: ObjectPoolling;
@@ -29,6 +29,10 @@ export class SpwanOnCircle extends Component {
 
     protected getTimeSpawnRoot(): number {
         return this._timeSpawn;
+    }
+
+    protected setTimeSpawnRoot(time: number): void {
+        this._timeSpawn = time;
     }
 
     protected getPoolSize(): number {
