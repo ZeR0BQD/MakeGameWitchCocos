@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "9c4c3c5d-6b53-45a6-a6b5-f3a0e410b691",
+  "uuid": "fca1611d-c295-4022-b91c-c0b0f6493c19",
   "files": [
     ".json",
     ".png"
@@ -10,14 +10,14 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "9c4c3c5d-6b53-45a6-a6b5-f3a0e410b691@6c48a",
-      "displayName": "Weapon card-menu-reveal0000",
+      "uuid": "fca1611d-c295-4022-b91c-c0b0f6493c19@6c48a",
+      "displayName": "Weapon card-menu-reveal0030",
       "id": "6c48a",
       "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
-        "imageUuidOrDatabaseUri": "9c4c3c5d-6b53-45a6-a6b5-f3a0e410b691",
+        "imageUuidOrDatabaseUri": "fca1611d-c295-4022-b91c-c0b0f6493c19",
         "isUuid": true,
         "visible": false,
         "minfilter": "linear",
@@ -34,19 +34,19 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "9c4c3c5d-6b53-45a6-a6b5-f3a0e410b691@f9941",
-      "displayName": "Weapon card-menu-reveal0000",
+      "uuid": "fca1611d-c295-4022-b91c-c0b0f6493c19@f9941",
+      "displayName": "Weapon card-menu-reveal0030",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
         "trimThreshold": 1,
         "rotated": false,
         "offsetX": 0.5,
-        "offsetY": -1.5,
-        "trimX": 92,
-        "trimY": 248,
-        "width": 313,
-        "height": 500,
+        "offsetY": -1,
+        "trimX": 87,
+        "trimY": 245,
+        "width": 323,
+        "height": 505,
         "rawWidth": 496,
         "rawHeight": 993,
         "borderTop": 0,
@@ -54,23 +54,23 @@
         "borderLeft": 0,
         "borderRight": 0,
         "packable": true,
-        "pixelsToUnit": 2,
+        "pixelsToUnit": 100,
         "pivotX": 0.5,
         "pivotY": 0.5,
         "meshType": 0,
         "vertices": {
           "rawPosition": [
-            -156.5,
-            -250,
+            -161.5,
+            -252.5,
             0,
-            156.5,
-            -250,
+            161.5,
+            -252.5,
             0,
-            -156.5,
-            250,
+            -161.5,
+            252.5,
             0,
-            156.5,
-            250,
+            161.5,
+            252.5,
             0
           ],
           "indexes": [
@@ -82,38 +82,38 @@
             3
           ],
           "uv": [
-            92,
-            745,
-            405,
-            745,
-            92,
-            245,
-            405,
-            245
+            87,
+            748,
+            410,
+            748,
+            87,
+            243,
+            410,
+            243
           ],
           "nuv": [
-            0.18548387096774194,
-            0.24672708962739173,
-            0.8165322580645161,
-            0.24672708962739173,
-            0.18548387096774194,
-            0.7502517623363545,
-            0.8165322580645161,
-            0.7502517623363545
+            0.17540322580645162,
+            0.24471299093655588,
+            0.8266129032258065,
+            0.24471299093655588,
+            0.17540322580645162,
+            0.7532729103726082,
+            0.8266129032258065,
+            0.7532729103726082
           ],
           "minPos": [
-            -156.5,
-            -250,
+            -161.5,
+            -252.5,
             0
           ],
           "maxPos": [
-            156.5,
-            250,
+            161.5,
+            252.5,
             0
           ]
         },
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "9c4c3c5d-6b53-45a6-a6b5-f3a0e410b691@6c48a",
+        "imageUuidOrDatabaseUri": "fca1611d-c295-4022-b91c-c0b0f6493c19@6c48a",
         "atlasUuid": "",
         "trimType": "auto"
       },
@@ -129,6 +129,6 @@
     "type": "sprite-frame",
     "hasAlpha": true,
     "fixAlphaTransparencyArtifacts": false,
-    "redirect": "9c4c3c5d-6b53-45a6-a6b5-f3a0e410b691@6c48a"
+    "redirect": "fca1611d-c295-4022-b91c-c0b0f6493c19@6c48a"
   }
 }

@@ -41,6 +41,37 @@ export class PlayerController extends Component implements IConfig {
 
     public readonly configPath = "player/playerStats";
 
+
+    public loadConfigData(configData: Record<string, any>): void {
+        console.log('[PlayerController] Loading config data...');
+
+        // Duyệt qua tất cả các key trong _keyToVariable
+        for (const configKey in this._keyToVariable) {
+            // Kiểm tra xem configData có chứa key này không
+            if (configData.hasOwnProperty(configKey)) {
+                // Lấy tên biến private tương ứng (VD: "_maxHP")
+                const variableName = this._keyToVariable[configKey];
+
+                // Lấy giá trị từ config data
+                const configValue = configData[configKey];
+
+                // Gán giá trị vào biến private
+                (this as any)[variableName] = configValue;
+
+                console.log(`  ✓ ${configKey} → ${variableName} = ${configValue}`);
+            } else {
+                console.warn(`  ⚠ Config key "${configKey}" not found in data`);
+            }
+        }
+
+        // Sau khi load config, update HP hiện tại
+        this._currentHP = this._maxHP;
+        this._publishHP();
+        this._publishEXP();
+
+        console.log('[PlayerController] Config loaded successfully!');
+    }
+
     protected onLoad(): void {
         if (!PlayerController._instance) {
             PlayerController._instance = this;
@@ -139,6 +170,18 @@ export class PlayerController extends Component implements IConfig {
 
     public applyUpgrade(upgradeData: { type: string, value: number }): void {
         this.processUpgrade(upgradeData);
+        this._logPlayerStats();
+    }
+
+    /**
+     * Log tất cả chỉ số hiện tại của player
+     */
+    private _logPlayerStats(): void {
+        console.log(` PLAYER STATS (sau upgrade):`);
+        console.log(`    HP: ${this._hp}/${this._maxHP} (${Math.round(this._hp / this._maxHP * 100)}%)`);
+        console.log(`   Level: ${this._level}`);
+        console.log(`   EXP: ${this._exp}/${this._maxEXP} (${Math.round(this._exp / this._maxEXP * 100)}%)`);
+        console.log(`   Speed: ${this._speed}`);
     }
 
     protected processUpgrade(upgradeData: { type: string, value: number }): void {

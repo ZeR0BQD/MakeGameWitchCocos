@@ -1,4 +1,4 @@
-import { _decorator, Component, Button } from 'cc'; decodeURIComponent
+import { _decorator, Component, Button, Sprite } from 'cc'; decodeURIComponent
 import { InstanceCard } from './InstanceCard';
 import { UpgradeManager } from './UpgradeManager';
 import { IConfig } from 'db://assets/Core/Config/IConfig';
@@ -32,7 +32,7 @@ export class CardUpgrade extends Component implements IConfig {
         return `cardUpgrade/${this._cardType}/${this._rarity}`;
     }
 
-    private _instanceCard: InstanceCard = null;
+    private _instanceCard: InstanceCard;
 
     protected onLoad(): void {
         const button = this.getComponent(Button);
@@ -82,6 +82,9 @@ export class CardUpgrade extends Component implements IConfig {
 
     private onCardClick(): void {
 
+        const sprite = this.getComponent(Sprite);
+
+
         this._applyUpgradeToPlayer();
 
         if (this._instanceCard) {
@@ -98,8 +101,12 @@ export class CardUpgrade extends Component implements IConfig {
      * Apply upgrade stats lên PlayerController
      */
     private _applyUpgradeToPlayer(): void {
+        // Log thông tin card được chọn
+        this._logCardUpgradeInfo();
+
         const player = PlayerController._instance;
         if (!player) {
+            console.error('[CardUpgrade]<_applyUpgradeToPlayer> PlayerController not found!');
             return;
         }
 
@@ -115,5 +122,38 @@ export class CardUpgrade extends Component implements IConfig {
         if (this._speed !== 0) {
             player.applyUpgrade({ type: 'SPEED', value: this._speed });
         }
+    }
+
+    /**
+     * Log thông tin card upgrade được chọn
+     */
+    private _logCardUpgradeInfo(): void {
+        console.log(`\n========== CARD UPGRADE SELECTED ==========`);
+        console.log(`Card Type: ${this._cardType}`);
+        console.log(`Rarity: ${this._rarity}`);
+        console.log(`Stats được cộng:`);
+
+        let statsCount = 0;
+
+        if (this._maxHP !== 0) {
+            console.log(`  MAX HP: +${this._maxHP}`);
+            statsCount++;
+        }
+
+        if (this._maxEXP !== 0) {
+            console.log(`  MAX EXP: +${this._maxEXP}`);
+            statsCount++;
+        }
+
+        if (this._speed !== 0) {
+            console.log(`  SPEED: +${this._speed}`);
+            statsCount++;
+        }
+
+        if (statsCount === 0) {
+            console.warn(`  Không có stat nào được cộng!`);
+        }
+
+        console.log(`===========================================\n`);
     }
 }

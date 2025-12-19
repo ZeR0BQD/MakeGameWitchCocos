@@ -2,7 +2,7 @@ import { Vec3, Vec2, director } from 'cc';
 import { ISquidState } from './ISquidState';
 import { SquidStateMachine } from '../SquidStateMachine';
 export class SquidPatrolState implements ISquidState {
-    protected _distancePatrol: number = 110;
+    protected _distancePatrol: number = 300;
     protected _distanceChangeMove = 500;  // Vùng phát hiện và bắt đầu đuổi theo player
     protected _patrolTarget: Vec3 | null = null;
     protected _spawnPosition: Vec3 | null = null;
@@ -48,15 +48,13 @@ export class SquidPatrolState implements ISquidState {
 
                 // Đếm thời gian chờ
                 this._currentWaitTime += deltaTime;
-
-                // Sau 3 giây, tạo điểm mới
                 if (this._currentWaitTime >= this._waitTimeAtTarget) {
                     this._isWaiting = false;
                     this._currentWaitTime = 0;
                     this._generateNewPatrolTarget(squid);
                 }
             } else if (!this._isWaiting) {
-                // Di chuyển về phía patrol target (chỉ khi không đang chờ)
+                // Di chuyển về phía patrol target
                 const direction = Vec3.subtract(new Vec3(), this._patrolTarget, squid.node.position);
                 direction.normalize();
                 squid.rigidBody.linearVelocity = new Vec2(direction.x * squid.speed * 0.5, direction.y * squid.speed * 0.5); // Patrol chậm hơn một nửa

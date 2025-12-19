@@ -1,0 +1,134 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "615c4c3a-5eaa-4c85-af10-9f800bc21be8",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "615c4c3a-5eaa-4c85-af10-9f800bc21be8@6c48a",
+      "displayName": "Weapon card-menu-reveal0015",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "imageUuidOrDatabaseUri": "615c4c3a-5eaa-4c85-af10-9f800bc21be8",
+        "isUuid": true,
+        "visible": false,
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "615c4c3a-5eaa-4c85-af10-9f800bc21be8@f9941",
+      "displayName": "Weapon card-menu-reveal0015",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0.5,
+        "offsetY": -1,
+        "trimX": 16,
+        "trimY": 152,
+        "width": 465,
+        "height": 691,
+        "rawWidth": 496,
+        "rawHeight": 993,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [
+            -232.5,
+            -345.5,
+            0,
+            232.5,
+            -345.5,
+            0,
+            -232.5,
+            345.5,
+            0,
+            232.5,
+            345.5,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            16,
+            841,
+            481,
+            841,
+            16,
+            150,
+            481,
+            150
+          ],
+          "nuv": [
+            0.03225806451612903,
+            0.1510574018126888,
+            0.969758064516129,
+            0.1510574018126888,
+            0.03225806451612903,
+            0.8469284994964753,
+            0.969758064516129,
+            0.8469284994964753
+          ],
+          "minPos": [
+            -232.5,
+            -345.5,
+            0
+          ],
+          "maxPos": [
+            232.5,
+            345.5,
+            0
+          ]
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "615c4c3a-5eaa-4c85-af10-9f800bc21be8@6c48a",
+        "atlasUuid": "",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "hasAlpha": true,
+    "fixAlphaTransparencyArtifacts": false,
+    "redirect": "615c4c3a-5eaa-4c85-af10-9f800bc21be8@6c48a"
+  }
+}
