@@ -4,7 +4,7 @@
  */
 export interface IConfig {
     /**
-     * Map từ key trong config file → tên biến private/protected trong class
+     * Map từ key trong file 
      * 
      * VD: {
      *   "maxHP": "_maxHP",

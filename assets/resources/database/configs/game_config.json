@@ -41,27 +41,27 @@
             }
         },
         "dropRateTable": {
-            "level_1_2": {
+            "2": {
                 "common": 80,
                 "rare": 20,
                 "epic": 0
             },
-            "level_3_4": {
+            "5": {
                 "common": 60,
                 "rare": 35,
                 "epic": 5
             },
-            "level_5_6": {
+            "8": {
                 "common": 40,
                 "rare": 45,
                 "epic": 15
             },
-            "level_7_8": {
+            "12": {
                 "common": 25,
                 "rare": 50,
                 "epic": 25
             },
-            "level_9_plus": {
+            "20": {
                 "common": 15,
                 "rare": 45,
                 "epic": 40

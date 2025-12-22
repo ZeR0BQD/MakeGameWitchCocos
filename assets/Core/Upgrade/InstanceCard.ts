@@ -1,9 +1,10 @@
-import { _decorator, Component, Prefab, Vec3, Node, director, UITransform, JsonAsset, resources } from 'cc';
+import { _decorator, Component, Prefab, Vec3, Node, director, UITransform } from 'cc';
 import { ObjectPoolling } from '../ObjectPoolling';
 import { UIManager } from '../../UI/Script/UIManager';
 import { IUISubscriber } from '../../UI/Script/IUISubscriber';
 import { CardUpgrade } from './CardUpgrade';
 import { PlayerController } from '../../Player/Script/Core/PlayerController';
+import { ConfigLoader } from '../Config/ConfigLoader';
 
 const { ccclass, property } = _decorator;
 
@@ -20,8 +21,11 @@ export class InstanceCard extends Component implements IUISubscriber {
     private _dropRateConfig: any = null;
     private _cardTypes: string[] = ['cardUpgradeHP', 'cardUpgradeEXP', 'cardUpgradeSpeed'];
 
+    // Milestone caching
+    private _currentMilestone: number = 0; // Cache milestone hiện tại
+
     protected onLoad(): void {
-        console.log("[InstanceCard] onLoad - cardPrefab:", this.cardPrefab);
+
 
         this._cardPool = this.node.addComponent(ObjectPoolling);
         this._cardPool.poolSize = 3;
@@ -33,8 +37,6 @@ export class InstanceCard extends Component implements IUISubscriber {
 
         this._cardPool.init(this.cardPrefab);
         this._cardContainer = this.getOrCreateCardContainer();
-
-        console.log("[InstanceCard] Container created:", this._cardContainer);
 
         // Load drop rate config
         this._loadDropRateConfig();
@@ -80,12 +82,11 @@ export class InstanceCard extends Component implements IUISubscriber {
     }
 
     public showCards(): void {
-        console.log("[InstanceCard] showCards() called!");
 
         this.hideCards();
 
         if (!this._cardContainer) {
-            console.error("[InstanceCard] _cardContainer is NULL!");
+            console.error("[InstanceCard]<showCards> _cardContainer is NULL!");
             return;
         }
 
@@ -109,10 +110,7 @@ export class InstanceCard extends Component implements IUISubscriber {
         for (let i = 0; i < 3; i++) {
             const xPosition = startX + (i * cardSpacing);
             const cardPosition = new Vec3(xPosition, yPosition, 0);
-
             const card = this._cardPool.getObject();
-            console.log("[InstanceCard] Card from pool:", card);
-
             if (card) {
                 card.parent = this._cardContainer;
                 card.setPosition(cardPosition);
@@ -136,19 +134,29 @@ export class InstanceCard extends Component implements IUISubscriber {
     }
 
     /**
-     * Load drop rate config từ game_config
+     * Load drop rate config từ ConfigLoader's shared data
      */
     private _loadDropRateConfig(): void {
-        resources.load("database/configs/game_config", JsonAsset, (err, jsonAsset: JsonAsset) => {
-            if (err) {
-                return;
-            }
+        // Kiểm tra ConfigLoader component có trên node không
+        const configLoader = this.node.getComponent(ConfigLoader);
+        if (!configLoader) {
+            console.error('[InstanceCard] ConfigLoader component not found! Cần có ConfigLoader trên cùng node.');
+            return;
+        }
 
-            const configData = jsonAsset.json;
-            if (configData && configData.cardUpgrade && configData.cardUpgrade.dropRateTable) {
-                this._dropRateConfig = configData.cardUpgrade.dropRateTable;
-            }
-        });
+        // Lấy config data từ shared storage
+        const configData = ConfigLoader.sharedConfigData;
+        if (!configData) {
+            console.warn('[InstanceCard] Config data chưa được load. ConfigLoader chưa load xong.');
+            return;
+        }
+
+        // Lấy drop rate table từ config
+        if (configData.cardUpgrade && configData.cardUpgrade.dropRateTable) {
+            this._dropRateConfig = configData.cardUpgrade.dropRateTable;
+        } else {
+            console.error('[InstanceCard] Drop rate table not found in config!');
+        }
     }
 
     /**
@@ -171,6 +179,39 @@ export class InstanceCard extends Component implements IUISubscriber {
     }
 
     /**
+     * Tìm level milestone gần nhất <= player level
+     * VD: player level 3, milestones [2, 5, 8] return 2
+     *     player level 7, milestones [2, 5, 8] return 5
+     */
+    private _findClosestMilestone(playerLevel: number): number {
+        if (!this._dropRateConfig) {
+            return 0;
+        }
+
+        // Lấy tất cả milestones và sort tăng dần
+        const milestones = Object.keys(this._dropRateConfig)
+            .map(key => parseInt(key))
+            .sort((a, b) => a - b);
+
+        if (milestones.length === 0) {
+            return 0;
+        }
+
+        // Tìm milestone lớn nhất mà <= playerLevel
+        let closestMilestone = milestones[0]; // Default: milestone đầu tiên
+
+        for (const milestone of milestones) {
+            if (playerLevel >= milestone) {
+                closestMilestone = milestone;
+            } else {
+                break; // Đã qua playerLevel, dừng
+            }
+        }
+
+        return closestMilestone;
+    }
+
+    /**
      * Random rarity dựa trên player level và drop rate table
      */
     private _randomRarity(playerLevel: number): string {
@@ -178,26 +219,23 @@ export class InstanceCard extends Component implements IUISubscriber {
             return 'common';
         }
 
-        // Xác định level range
-        let dropRateKey = 'level_1_2';
-        if (playerLevel <= 2) {
-            dropRateKey = 'level_1_2';
-        } else if (playerLevel <= 4) {
-            dropRateKey = 'level_3_4';
-        } else if (playerLevel <= 6) {
-            dropRateKey = 'level_5_6';
-        } else if (playerLevel <= 8) {
-            dropRateKey = 'level_7_8';
-        } else {
-            dropRateKey = 'level_9_plus';
+        // Kiểm tra nếu cần update milestone
+        // Chỉ tính lại khi player level up qua milestone mới
+        const newMilestone = this._findClosestMilestone(playerLevel);
+        if (newMilestone !== this._currentMilestone) {
+            this._currentMilestone = newMilestone;
         }
 
+        // Lấy drop rate từ milestone hiện tại
+        const dropRateKey = this._currentMilestone.toString();
         const dropRate = this._dropRateConfig[dropRateKey];
+
         if (!dropRate) {
+            console.error(`[InstanceCard] Drop rate not found for milestone: ${dropRateKey}`);
             return 'common';
         }
 
-        // Weighted random dựa trên tỉ lệ
+        // Random dựa trên tỉ lệ
         const rand = Math.random() * 100;
         let cumulative = 0;
 

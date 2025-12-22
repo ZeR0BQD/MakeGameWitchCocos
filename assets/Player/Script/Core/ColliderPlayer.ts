@@ -23,10 +23,7 @@ export class ColliderPlayer extends Component {
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-        const _layerNeedCheck = Layers.nameToLayer('Enemy');
-        const _changeBitmask = 1 << _layerNeedCheck;
-        if (otherCollider.node.layer & _changeBitmask) {
-        }
+
     }
 
 }

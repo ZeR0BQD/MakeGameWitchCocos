@@ -16,8 +16,8 @@ export class ConfigLoader extends Component implements IConfig {
     _keyToVariable: Record<string, string>;
     configPath?: string;
 
-    private static _sharedConfigData: any = null;
-    private static _sharedConfigAsset: JsonAsset = null;
+    public static sharedConfigData: any = null;
+    public static sharedConfigAsset: JsonAsset = null;
 
     @property(JsonAsset)
     public configAsset: JsonAsset = null;
@@ -43,7 +43,7 @@ export class ConfigLoader extends Component implements IConfig {
         // Load config data từ asset
         this._loadConfigData();
 
-        if (!ConfigLoader._sharedConfigData) {
+        if (!ConfigLoader.sharedConfigData) {
             console.error('[ConfigLoader] Failed to load config data');
             return;
         }
@@ -58,18 +58,15 @@ export class ConfigLoader extends Component implements IConfig {
         // Lấy configPath từ controller
         const configPath = controller.configPath;
 
-        // Kiểm tra configPath có được set không
-        // Nếu rỗng, skip loading (cho phép dynamic loading sau)
         if (!configPath || configPath === '') {
-            // Không log error nữa, cho phép component load config sau
             return;
         }
 
         // Lấy config data theo path
-        const configData = this._getConfigByPath(ConfigLoader._sharedConfigData, configPath);
+        const configData = this._getConfigByPath(ConfigLoader.sharedConfigData, configPath);
         if (!configData) {
             console.error(`[ConfigLoader] Config not found at path: "${configPath}"`);
-            console.error(`[ConfigLoader] Available root keys:`, Object.keys(ConfigLoader._sharedConfigData));
+            console.error(`[ConfigLoader] Available root keys:`, Object.keys(ConfigLoader.sharedConfigData));
             return;
         }
 
@@ -83,12 +80,12 @@ export class ConfigLoader extends Component implements IConfig {
     private _loadConfigData(): void {
         // Nếu có configAsset mới, update shared data
         if (this.configAsset) {
-            ConfigLoader._sharedConfigAsset = this.configAsset;
-            ConfigLoader._sharedConfigData = this.configAsset.json;
+            ConfigLoader.sharedConfigAsset = this.configAsset;
+            ConfigLoader.sharedConfigData = this.configAsset.json;
         }
 
         // Nếu chưa có shared data, load từ resources
-        if (!ConfigLoader._sharedConfigData) {
+        if (!ConfigLoader.sharedConfigData) {
             // Fallback: load từ default path
             this._loadFromResources("database/configs/game_config");
         }
@@ -103,8 +100,8 @@ export class ConfigLoader extends Component implements IConfig {
                 console.error(`[ConfigLoader] Failed to load config from "${path}":`, err);
                 return;
             }
-            ConfigLoader._sharedConfigAsset = jsonAsset;
-            ConfigLoader._sharedConfigData = jsonAsset.json;
+            ConfigLoader.sharedConfigAsset = jsonAsset;
+            ConfigLoader.sharedConfigData = jsonAsset.json;
         });
     }
 
@@ -125,17 +122,14 @@ export class ConfigLoader extends Component implements IConfig {
     }
 
     /**
-     * Lấy config data theo path (hỗ trợ nested path với delimiter '/')
-     * Path REQUIRED - không hỗ trợ auto-detect
+     * Lấy config data theo path 
      */
     private _getConfigByPath(configData: any, path: string): any {
-        // Path rỗng → return null (không auto-detect)
+        // Path rỗng return null 
         if (!path || path === '') {
             console.error(`[ConfigLoader]<_getConfigByPath> Path is required!`);
             return null;
         }
-
-        // Xử lý path với delimiter '/'
         const keys = path.split('/');
         let current = configData;
 
@@ -169,7 +163,7 @@ export class ConfigLoader extends Component implements IConfig {
      * Clear shared config data
      */
     public static clearSharedConfig(): void {
-        ConfigLoader._sharedConfigData = null;
-        ConfigLoader._sharedConfigAsset = null;
+        ConfigLoader.sharedConfigData = null;
+        ConfigLoader.sharedConfigAsset = null;
     }
 }

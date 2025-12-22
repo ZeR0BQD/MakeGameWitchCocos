@@ -21,7 +21,7 @@ export class CardUpgrade extends Component implements IConfig {
     private _maxEXP: number = 0;
     private _speed: number = 0;
 
-    // Dynamic card data (injected từ InstanceCard)
+    // Dynamic card data (injected từ InstanceCard thông qua setCardData)
     private _cardType: string = ""; // "cardUpgradeHP", "cardUpgradeEXP", "cardUpgradeSpeed"
     private _rarity: string = ""; // "common", "rare", "epic"
 
@@ -38,6 +38,13 @@ export class CardUpgrade extends Component implements IConfig {
         const button = this.getComponent(Button);
         if (button) {
             button.node.on(Button.EventType.CLICK, this.onCardClick, this);
+        }
+    }
+
+    protected start(): void {
+        if (!this._cardType || !this._rarity) {
+            console.error("[CardUpgrade] cardType and rarity are required! Call setCardData() first.");
+            return;
         }
     }
 
@@ -66,12 +73,7 @@ export class CardUpgrade extends Component implements IConfig {
         }
     }
 
-    protected start(): void {
-        if (!this._cardType || !this._rarity) {
-            console.error("[CardUpgrade] cardType and rarity are required! Call setCardData() first.");
-            return;
-        }
-    }
+
 
     onDestroy(): void {
         const button = this.getComponent(Button);
@@ -83,7 +85,6 @@ export class CardUpgrade extends Component implements IConfig {
     private onCardClick(): void {
 
         const sprite = this.getComponent(Sprite);
-
 
         this._applyUpgradeToPlayer();
 
@@ -101,9 +102,6 @@ export class CardUpgrade extends Component implements IConfig {
      * Apply upgrade stats lên PlayerController
      */
     private _applyUpgradeToPlayer(): void {
-        // Log thông tin card được chọn
-        this._logCardUpgradeInfo();
-
         const player = PlayerController._instance;
         if (!player) {
             console.error('[CardUpgrade]<_applyUpgradeToPlayer> PlayerController not found!');
@@ -122,38 +120,5 @@ export class CardUpgrade extends Component implements IConfig {
         if (this._speed !== 0) {
             player.applyUpgrade({ type: 'SPEED', value: this._speed });
         }
-    }
-
-    /**
-     * Log thông tin card upgrade được chọn
-     */
-    private _logCardUpgradeInfo(): void {
-        console.log(`\n========== CARD UPGRADE SELECTED ==========`);
-        console.log(`Card Type: ${this._cardType}`);
-        console.log(`Rarity: ${this._rarity}`);
-        console.log(`Stats được cộng:`);
-
-        let statsCount = 0;
-
-        if (this._maxHP !== 0) {
-            console.log(`  MAX HP: +${this._maxHP}`);
-            statsCount++;
-        }
-
-        if (this._maxEXP !== 0) {
-            console.log(`  MAX EXP: +${this._maxEXP}`);
-            statsCount++;
-        }
-
-        if (this._speed !== 0) {
-            console.log(`  SPEED: +${this._speed}`);
-            statsCount++;
-        }
-
-        if (statsCount === 0) {
-            console.warn(`  Không có stat nào được cộng!`);
-        }
-
-        console.log(`===========================================\n`);
     }
 }
