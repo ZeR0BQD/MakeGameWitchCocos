@@ -1,5 +1,4 @@
 import { _decorator, Component, Node, Collider2D, Layers, Contact2DType, RigidBody2D, IPhysics2DContact, tween, Vec3, Tween } from 'cc';
-import { ConfigLoader } from 'db://assets/Core/Config/ConfigLoader';
 import { SkillsManager } from 'db://assets/Player/Script/Core/SkillsManager';
 
 const { ccclass, property } = _decorator;
@@ -13,9 +12,10 @@ export class BubbleController extends Component {
     bounceSpeed: number = 2;
 
     @property({
-        tooltip: 'Tên skill sẽ được add vào Player khi chạm (VD: Sword, Bow, Magic)'
+        tooltip: 'Tên skill sẽ được add vào Player khi chạm (VD: Sword, Bow, Magic)',
+        type: String
     })
-    skillName: string = 'Sword';
+    protected skillName: string = 'Sword';
 
     private _playerBitmask: number = 0;
     private _bounceTween: Tween<Node> | null = null;
@@ -62,10 +62,6 @@ export class BubbleController extends Component {
         }
     }
 
-    /**
-     * Add skill vào Player khi chạm vào bubble
-     * @param playerNode Node của Player (từ collider)
-     */
     adderToPlayer(playerNode: Node) {
         const skillsManagerNode = playerNode.getChildByName('SkillsManager');
         if (!skillsManagerNode) {
@@ -80,5 +76,9 @@ export class BubbleController extends Component {
         }
 
         skillsManager.addSkill(this.skillName);
+    }
+
+    public setSkillName(skillName: string): void {
+        this.skillName = skillName;
     }
 }

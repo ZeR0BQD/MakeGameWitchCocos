@@ -3,6 +3,7 @@ import { IDamageable } from 'db://assets/Enemy/IDamageable';
 import { PlayerController } from 'db://assets/Player/Script/Core/PlayerController';
 import { ObjectPoolling } from 'db://assets/Core/ObjectPoolling';
 import { SquidStateMachine } from './SquidStateMachine';
+import { UIManager } from 'db://assets/UI/Script/UIManager';
 
 const { ccclass, property } = _decorator;
 
@@ -72,6 +73,14 @@ export class SquidController extends IDamageable {
         const player = PlayerController._instance;
         if (player) {
             player.addExpReward(this._expReward);
+        }
+
+        const uiManager = UIManager.getInstance();
+        if (uiManager && player) {
+            uiManager.publish('enemyDie', {
+                position: this.node.getPosition(),
+                playerLevel: player.level
+            });
         }
 
         if (this._pool) {

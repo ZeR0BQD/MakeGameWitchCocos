@@ -1,16 +1,19 @@
-import { _decorator, Component, Node, Vec3 } from 'cc';
+import { _decorator, Node, Vec3 } from 'cc';
+import { SkillsCollider } from 'db://assets/Player/Skills/Script/SkillsCollider';
 import { PlayerController } from 'db://assets/Player/Script/Core/PlayerController';
 const { ccclass, property } = _decorator;
 
 @ccclass('SwordCotroller')
-export class SwordCotroller extends Component {
+export class SwordCotroller extends SkillsCollider {
+    @property({ override: true }) protected damage: number = 10;
     @property protected speedRotate: number = 1;
-    @property public baseDamage: number = 10;
+
     protected _target: Node;
     protected _angleRotate: number;
     protected _radius: number;
 
     start() {
+        super.start();
         this._target = PlayerController._instance.node;
         this.getAngleWithTarget()
         this._radius = Vec3.distance(this.node.getPosition(), this._target.getPosition());
@@ -20,7 +23,6 @@ export class SwordCotroller extends Component {
         this.rotatePosSword(deltaTime);
         this.rotateSpriteSword();
     }
-
 
     protected rotatePosSword(deltaTime: number) {
         if (!this._target) return;
@@ -52,5 +54,3 @@ export class SwordCotroller extends Component {
         this._radius = Vec3.distance(this.node.getPosition(), this._target.getPosition());
     }
 }
-
-

@@ -1,16 +1,13 @@
 import { _decorator, Collider2D, Component, Contact2DType } from 'cc';
 import { IDamageable } from 'db://assets/Enemy/IDamageable';
-import { SwordCotroller } from './SwordCotroller';
 const { ccclass, property } = _decorator;
 
-@ccclass('SwordCollider')
-export class SwordCollider extends Component {
-    protected swordController: SwordCotroller = null;
+@ccclass('SkillsCollider')
+export class SkillsCollider extends Component {
+    @property protected damage: number = 10;
 
     start() {
-        this.swordController = this.getComponent(SwordCotroller);
-
-        let collider = this.getComponent(Collider2D);
+        const collider = this.getComponent(Collider2D);
         if (collider) {
             collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         }
@@ -20,7 +17,11 @@ export class SwordCollider extends Component {
         const damageable = otherCollider.node.getComponent(IDamageable);
 
         if (damageable && damageable.isAlive()) {
-            damageable.takeDamage(this.swordController?.baseDamage ?? 10);
+            damageable.takeDamage(this.damage);
+            this.onHit(damageable);
         }
+    }
+
+    protected onHit(target: IDamageable): void {
     }
 }

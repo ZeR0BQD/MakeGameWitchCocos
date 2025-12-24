@@ -1,18 +1,12 @@
-import { _decorator, Component, Node, Prefab, resources, instantiate } from 'cc';
+import { _decorator, Component, Node, Prefab, resources, instantiate, RichText } from 'cc';
 import { ConfigLoader } from 'db://assets/Core/Config/ConfigLoader';
 
 const { ccclass, property } = _decorator;
 
-/**
- * SkillsManager - Quản lý việc load và spawn skills cho Player
- * Add component này vào child node của Player để quản lý skills
- */
 @ccclass('SkillsManager')
 export class SkillsManager extends Component {
-
-    // Map để lưu các skill instances đang active
     private _activeSkills: Map<string, Node> = new Map();
-
+    @property({ type: Node }) public text: Node;
     start() {
     }
 
@@ -21,7 +15,9 @@ export class SkillsManager extends Component {
             console.warn(`[SkillsManager] Skill "${skillName}" đã tồn tại!`);
             return;
         }
-
+        if (skillName === "LightBullet") {
+            this.text.active = true;
+        }
         const skillPath = this._loadSkillConfig(skillName);
         if (!skillPath) {
             console.error(`[SkillsManager] Không tìm thấy config cho skill "${skillName}"`);
@@ -86,25 +82,32 @@ export class SkillsManager extends Component {
     private _loadAndSpawnSkill(skillPath: string, skillName: string): void {
         console.log(`[SkillsManager] Đang load skill "${skillName}" từ path: ${skillPath}`);
 
-        // Load prefab từ resources
         resources.load(skillPath, Prefab, (err, prefab: Prefab) => {
             if (err) {
-                console.error(`[SkillsManager] Lỗi load prefab "${skillPath}":`, err);
+                console.error(`[SkillsManager] ❌ Lỗi load prefab "${skillPath}":`, err);
+                console.error('[SkillsManager] Error details:', JSON.stringify(err));
                 return;
             }
 
-            // Instantiate prefab 
+            if (!prefab) {
+                console.error(`[SkillsManager] ❌ Prefab null cho path: ${skillPath}`);
+                return;
+            }
+
+            console.log(`[SkillsManager] ✅ Load prefab thành công: ${skillName}`);
+
             const skillInstance = instantiate(prefab);
 
-            // Set tên cho node (để dễ debug)
+            if (!skillInstance) {
+                console.error(`[SkillsManager] ❌ Không thể instantiate prefab: ${skillName}`);
+                return;
+            }
+
             skillInstance.name = `Skill_${skillName}`;
-
-            // Thêm vào Player node (this.node là SkillsManager node - child của Player)
             this.node.addChild(skillInstance);
-
-            // Lưu vào Map để quản lý
             this._activeSkills.set(skillName, skillInstance);
 
+            console.log(`[SkillsManager] ✅ Spawn skill "${skillName}" thành công!`);
         });
     }
 }

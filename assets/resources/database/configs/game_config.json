@@ -68,20 +68,35 @@
             }
         }
     },
-    "enemy": {
-        "squid": {
-            "squidStats": {
-                "maxHealth": 10,
-                "expReward": 50,
-                "speed": 8,
-                "attackRange": 175,
-                "damage": 25
+    "bubble": {
+        "bubbleDropRate": 100,
+        "skillDropRate": {
+            "2": {
+                "Sword": 20,
+                "LightBullet": 80
+            },
+            "5": {
+                "Sword": 40,
+                "LightBullet": 60
+            },
+            "8": {
+                "Sword": 60,
+                "LightBullet": 40
+            },
+            "12": {
+                "Sword": 40,
+                "LightBullet": 60
+            },
+            "20": {
+                "Sword": 30,
+                "LightBullet": 70
             }
         }
     },
     "Prefabs": {
         "Skills": {
-            "Sword": "Prefabs/Skills/Sword/SpawnSword"
+            "Sword": "Prefabs/Skills/Sword/SpawnSword",
+            "LightBullet": "Prefabs/Skills/LightBullet/SpawnLightBullet"
         }
     }
 }

@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "SpawnSword",
+    "_name": "SpawnLightBullet",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "SpawnSword",
+    "_name": "SpawnLightBullet",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -57,7 +57,7 @@
     "_id": ""
   },
   {
-    "__type__": "326a9J/sAxAYLw92xk3QzGN",
+    "__type__": "7c030x9ZdNET5116efwQMsx",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -69,19 +69,21 @@
       "__id__": 3
     },
     "prefab": {
-      "__uuid__": "10df0d90-6452-4528-ba77-c64c17c4fc49",
+      "__uuid__": "a03b387b-9791-437a-b0c2-676b5fa2d5d4",
       "__expectedType__": "cc.Prefab"
     },
-    "target": null,
     "_poolSize": 10,
     "_timeSpawn": 0,
-    "numberOfObjects": 3,
-    "distanceSpawn": 100,
+    "numberOfObjects": 10,
+    "distanceSpawn": 50,
+    "cooldownPerStack": 3,
+    "maxStacks": 3,
+    "inputDelay": 0.75,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "8f/I8qQmdNiqli2ys961PJ"
+    "fileId": "97LVywh1NC1qMMgbnuyaF+"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -91,7 +93,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "1ak8B418dI3LoxoaYKwwaE",
+    "fileId": "27lzWLRsRIpYLIJEOcVi9o",
     "instance": null,
     "targetOverrides": null
   }
