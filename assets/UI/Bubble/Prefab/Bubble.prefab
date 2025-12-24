@@ -231,6 +231,7 @@
     },
     "bounceHeight": 7,
     "bounceSpeed": 0.8,
+    "skillName": "Sword",
     "_id": ""
   },
   {
@@ -252,7 +253,7 @@
     "tag": 0,
     "_group": 1,
     "_density": 1,
-    "_sensor": false,
+    "_sensor": true,
     "_friction": 0.2,
     "_restitution": 0,
     "_offset": {
@@ -285,7 +286,7 @@
     "_group": 1,
     "_type": 2,
     "_allowSleep": true,
-    "_gravityScale": 0,
+    "_gravityScale": 1,
     "_linearDamping": 0,
     "_angularDamping": 0,
     "_linearVelocity": {
@@ -299,7 +300,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "42MWR26lJOrL9bDeO3Z8Mr"
+    "fileId": "42r1d9HhVNC4jCYPYlh/Xi"
   },
   {
     "__type__": "cc.PrefabInfo",

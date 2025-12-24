@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "60f0e6a0-f423-4f71-ae0b-97e01ec428b9",
+  "uuid": "74f553ad-9924-41b8-828b-e6f53d0ab4e4",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "Sword"
+    "syncNodeName": "SpawnSword"
   }
 }

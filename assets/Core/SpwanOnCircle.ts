@@ -5,8 +5,8 @@ const { ccclass, property } = _decorator;
 @ccclass('SpwanOnCircle')
 export class SpwanOnCircle extends Component {
 
-    @property(Prefab) protected prefab: Prefab;
-    @property(Node) protected target: Node;
+    @property({ type: Prefab, override: true }) protected prefab: Prefab;
+    @property({ type: Node, override: true }) protected target: Node;
     @property({ type: CCInteger }) protected _poolSize: number = 10;
     @property({ type: CCFloat, override: true }) protected _timeSpawn: number = 3.0;
     protected _timer: number = 0;

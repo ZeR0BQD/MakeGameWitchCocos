@@ -1,6 +1,8 @@
-import { _decorator, CCInteger, math, Node, Vec3 } from 'cc';
+import { _decorator, CCInteger, math, Node, Prefab, Vec3 } from 'cc';
 import { SpwanOnCircle } from 'db://assets/Core/SpwanOnCircle';
 import { SwordCotroller } from './SwordCotroller';
+import { PlayerController } from 'db://assets/Player/Script/Core/PlayerController';
+import { ConfigLoader } from 'db://assets/Core/Config/ConfigLoader';
 
 const { ccclass, property } = _decorator;
 
@@ -10,6 +12,7 @@ export class SpawnSword extends SpwanOnCircle {
     @property({ type: CCInteger }) public numberOfSwords: number = 3;
     @property public distanceSpawn: number = 100;
     @property({ override: true }) protected _timeSpawn: number = 0;
+    @property({ type: Node, override: true }) protected target: Node;
 
     private _activeSwords: Node[] = [];
     private _lastSwordCount: number = 0;
@@ -24,10 +27,11 @@ export class SpawnSword extends SpwanOnCircle {
 
     onLoad() {
         super.onLoad();
-        this._lastSwordCount = this.numberOfSwords;
     }
 
     start(): void {
+        this.target = PlayerController._instance.node;
+        this._lastSwordCount = this.numberOfSwords;
         this.spawnInitialSwords();
     }
 

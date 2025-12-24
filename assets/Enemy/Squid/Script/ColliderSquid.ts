@@ -32,12 +32,11 @@ export class ColliderSquid extends Component {
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         const _layerNeedCheck = Layers.nameToLayer('Player');
         const _changeBitmask = 1 << _layerNeedCheck;
-
         if (otherCollider.node.layer & _changeBitmask) {
             const playerController = otherCollider.node.getComponent(PlayerController);
 
             if (playerController) {
-                const DAMAGE = this.squidController?.damage ?? 25;
+                const DAMAGE = this.squidController?._damage ?? 25;
                 playerController.hp -= DAMAGE;
             }
         }

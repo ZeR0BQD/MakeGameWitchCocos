@@ -78,5 +78,10 @@
                 "damage": 25
             }
         }
+    },
+    "Prefabs": {
+        "Skills": {
+            "Sword": "Prefabs/Skills/Sword/SpawnSword"
+        }
     }
 }

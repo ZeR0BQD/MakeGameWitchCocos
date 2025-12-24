@@ -110,7 +110,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "e29TO1vyNIHLUTC+zRDvb1"
+    "fileId": "c1odshV+FPSq3obo1/HMY0"
   },
   {
     "__type__": "169b5FXN35Op5micH7gmt9F",
@@ -125,11 +125,12 @@
       "__id__": 5
     },
     "speedRotate": 50,
+    "baseDamage": 10,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "9e7hfv2ulG+5lARerM81PJ"
+    "fileId": "4dUzzusbtErJXm2/xLycAT"
   },
   {
     "__type__": "cc.BoxCollider2D",
@@ -163,7 +164,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "9eScSirpZKR6Gg+W5GCj/b"
+    "fileId": "d7GDPj6wFOcJ+7G1lQStOT"
   },
   {
     "__type__": "43da24Fg+1CFb2qxdHpFk3Y",
@@ -177,12 +178,11 @@
     "__prefab": {
       "__id__": 9
     },
-    "baseDamage": 10,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "cf/9fBkoJHbLtuM/2Nixyi"
+    "fileId": "abvTTEUbtCt42276fiMJ83"
   },
   {
     "__type__": "cc.RigidBody2D",
@@ -216,7 +216,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "c4Gijv1gpGo7GkL7rKhltY"
+    "fileId": "d8R+hsmxxCxqGzZ7HfThhR"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -226,8 +226,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "cfQDKpJ+FMToqaqK0Xz5uV",
-    "instance": null,
+    "fileId": "58/kwVu4dGZqUWxoXdvOt7",
     "targetOverrides": null
   }
 ]
