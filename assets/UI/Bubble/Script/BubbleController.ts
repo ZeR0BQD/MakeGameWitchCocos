@@ -19,6 +19,7 @@ export class BubbleController extends Component {
 
     private _playerBitmask: number = 0;
     private _bounceTween: Tween<Node> | null = null;
+    private _hasCollided: boolean = false; // Flag để tránh collision trigger nhiều lần
 
     start() {
         const originalY = this.node.position.y;
@@ -42,7 +43,13 @@ export class BubbleController extends Component {
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
+        // Guard: Chỉ xử lý collision 1 lần duy nhất
+        if (this._hasCollided) {
+            return;
+        }
+
         if (otherCollider.node.layer & this._playerBitmask) {
+            this._hasCollided = true; // Đánh dấu đã xử lý
             this.adderToPlayer(otherCollider.node);
             this.scheduleOnce(() => {
                 this.node.destroy();

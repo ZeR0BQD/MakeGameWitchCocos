@@ -95,7 +95,10 @@
     },
     "Prefabs": {
         "Skills": {
-            "Sword": "Prefabs/Skills/Sword/SpawnSword",
+            "Sword": {
+                "sprite": "db:assets/resources/Prefabs/Skills/Sword/Sprite/Sword",
+                "prefab": "Prefabs/Skills/Sword/SpawnSword"
+            },
             "LightBullet": "Prefabs/Skills/LightBullet/SpawnLightBullet"
         }
     }

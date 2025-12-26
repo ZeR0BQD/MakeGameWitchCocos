@@ -14,7 +14,7 @@ export class InstanceSkills extends Component implements IUISubscriber {
     @property({ type: Node })
     private bubbleContainer: Node = null;
 
-    private _bubbleDropRate: number = 100;
+    private _bubbleDropRate: number = 20;
     private _skillDropConfig: any = null;
 
     start() {
