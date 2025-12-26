@@ -6,7 +6,7 @@ const { ccclass, property } = _decorator;
 @ccclass('SkillsManager')
 export class SkillsManager extends Component {
     private _activeSkills: Map<string, Node> = new Map();
-    private _loadingSkills: Set<string> = new Set(); // Track skills đang load để tránh duplicate
+    private _loadingSkills: Set<string> = new Set();
     @property({ type: Node }) public text: Node;
     start() {
     }
@@ -84,7 +84,7 @@ export class SkillsManager extends Component {
 
         // Lấy path theo tên skill
         if (skillsConfig.hasOwnProperty(skillName)) {
-            return skillsConfig[skillName];
+            return skillsConfig[skillName].prefab;
         }
 
         return null;

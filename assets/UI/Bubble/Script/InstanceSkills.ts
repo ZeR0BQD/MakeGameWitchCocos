@@ -1,4 +1,4 @@
-import { _decorator, Component, Prefab, Node, instantiate, Vec3 } from 'cc';
+import { _decorator, Component, Prefab, Node, instantiate, Vec3, SpriteFrame, SpriteRenderer, resources } from 'cc';
 import { UIManager } from 'db://assets/UI/Script/UIManager';
 import { IUISubscriber } from 'db://assets/UI/Script/IUISubscriber';
 import { BubbleController } from './BubbleController';
@@ -16,6 +16,7 @@ export class InstanceSkills extends Component implements IUISubscriber {
 
     private _bubbleDropRate: number = 20;
     private _skillDropConfig: any = null;
+    private _skillConfig: any = null;
 
     start() {
         const uiManager = UIManager.getInstance();
@@ -48,15 +49,15 @@ export class InstanceSkills extends Component implements IUISubscriber {
     }
 
     private _loadConfig(): void {
-        const configData = ConfigLoader.sharedConfigData;
-        if (!configData) {
+        this._skillConfig = ConfigLoader.sharedConfigData;
+        if (!this._skillConfig) {
             console.warn('[InstanceSkills] Config data not loaded');
             return;
         }
 
-        if (configData.bubble) {
-            this._bubbleDropRate = configData.bubble.bubbleDropRate || 20;
-            this._skillDropConfig = configData.bubble.skillDropRate || null;
+        if (this._skillConfig.bubble) {
+            this._bubbleDropRate = this._skillConfig.bubble.bubbleDropRate || 20;
+            this._skillDropConfig = this._skillConfig.bubble.skillDropRate || null;
             console.log('[InstanceSkills] Loaded config:', this._bubbleDropRate, this._skillDropConfig);
         } else {
             console.error('[InstanceSkills] Bubble config not found!');
@@ -139,6 +140,46 @@ export class InstanceSkills extends Component implements IUISubscriber {
         }
     }
 
+    private _setSkillSprite(bubble: Node, skillName: string): void {
+        if (!this._skillConfig?.Prefabs?.Skills?.[skillName]) {
+            console.warn(`[InstanceSkills] No config for skill "${skillName}"`);
+            return;
+        }
+
+        const skillConfig = this._skillConfig.Prefabs.Skills[skillName];
+        const spritePath = skillConfig.sprite;
+
+        if (!spritePath) {
+            console.warn(`[InstanceSkills] No sprite path for skill "${skillName}"`);
+            return;
+        }
+
+        const adderNode = bubble.getChildByName("Adder");
+        if (!adderNode) {
+            console.error('[InstanceSkills] Adder node not found in bubble!');
+            return;
+        }
+
+        const spriteRenderer = adderNode.getComponent(SpriteRenderer);
+        if (!spriteRenderer) {
+            console.error('[InstanceSkills] SpriteRenderer not found on Adder!');
+            return;
+        }
+
+        // Load sprite asset từ resources
+        resources.load(spritePath, SpriteFrame, (err, spriteFrame: SpriteFrame) => {
+            if (err) {
+                console.error(`[InstanceSkills] Failed to load sprite "${spritePath}":`, err);
+                return;
+            }
+
+            if (spriteFrame && spriteRenderer.isValid) {
+                spriteRenderer.spriteFrame = spriteFrame;
+                console.log(`[InstanceSkills] Set sprite for "${skillName}"`);
+            }
+        });
+    }
+
     private spawnBubble(position: Vec3, playerLevel: number): void {
         if (!this.randomBubbleDrop()) {
             console.log('[InstanceSkills] Drop failed');
@@ -164,6 +205,7 @@ export class InstanceSkills extends Component implements IUISubscriber {
         this.bubbleContainer.addChild(bubble);
         bubble.setPosition(position);
         this.injectSkillToBubble(bubble, skillName);
+        this._setSkillSprite(bubble, skillName);
 
         this.scheduleOnce(() => {
             bubble.active = true;

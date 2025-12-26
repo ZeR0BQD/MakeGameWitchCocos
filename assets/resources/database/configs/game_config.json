@@ -72,34 +72,37 @@
         "bubbleDropRate": 100,
         "skillDropRate": {
             "2": {
-                "Sword": 20,
-                "LightBullet": 80
-            },
-            "5": {
-                "Sword": 40,
-                "LightBullet": 60
-            },
-            "8": {
                 "Sword": 60,
                 "LightBullet": 40
             },
-            "12": {
+            "5": {
+                "Sword": 50,
+                "LightBullet": 50
+            },
+            "8": {
                 "Sword": 40,
                 "LightBullet": 60
             },
-            "20": {
+            "12": {
                 "Sword": 30,
                 "LightBullet": 70
+            },
+            "20": {
+                "Sword": 20,
+                "LightBullet": 80
             }
         }
     },
     "Prefabs": {
         "Skills": {
             "Sword": {
-                "sprite": "db:assets/resources/Prefabs/Skills/Sword/Sprite/Sword",
-                "prefab": "Prefabs/Skills/Sword/SpawnSword"
+                "prefab": "Prefabs/Skills/Sword/SpawnSword",
+                "sprite": "Prefabs/Skills/Sword/Sprite/SwordSprite/spriteFrame"
             },
-            "LightBullet": "Prefabs/Skills/LightBullet/SpawnLightBullet"
+            "LightBullet": {
+                "prefab": "Prefabs/Skills/LightBullet/SpawnLightBullet",
+                "sprite": "Prefabs/Skills/LightBullet/Sprite/LightBulletSprite/spriteFrame"
+            }
         }
     }
 }
