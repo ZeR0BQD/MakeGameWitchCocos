@@ -35,6 +35,10 @@ export class SquidStateMachine extends Component {
         return this._controller ? this._controller._patrolRange : 0;
     }
 
+    public get enablePatrol(): boolean {
+        return this._controller ? this._controller.enablePatrol : false;
+    }
+
     start() {
         this.target = PlayerController._instance.node;
         this._controller = this.getComponent(SquidController);
@@ -44,7 +48,7 @@ export class SquidStateMachine extends Component {
             this._rigidBody.fixedRotation = true;
         }
 
-        this.changeState(this.patrolState);
+        this.changeState(this.moveState);
     }
 
     update(deltaTime: number) {

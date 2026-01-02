@@ -14,6 +14,8 @@ export class SquidController extends IDamageable {
     @property({ type: CCFloat }) public _speed: number = 8;
     @property({ type: CCFloat }) public _attackRange: number = 120;  // Vùng chuyển sang tấn công
     @property({ type: CCFloat }) public _patrolRange: number = 400;  // Vùng từ bỏ đuổi theo
+    @property({ tooltip: 'Cho phép squid patrol khi ra ngoài patrol range' })
+    public enablePatrol: boolean = false;
     @property({ type: CCFloat }) public _damage: number = 25;
 
     protected _currentHealth: number;
@@ -49,7 +51,10 @@ export class SquidController extends IDamageable {
             if (this._stateMachine.rigidBody) {
                 this._stateMachine.rigidBody.linearVelocity = Vec2.ZERO;
             }
-            this._stateMachine.changeState(this._stateMachine.patrolState);
+            const initialState = this.enablePatrol
+                ? this._stateMachine.patrolState
+                : this._stateMachine.moveState;
+            this._stateMachine.changeState(initialState);
         }
     }
 

@@ -24,6 +24,7 @@ export class LightBulletCtrl extends SkillsCollider {
     onEnable() {
         this._lifetimeTimer = 0;
         this._isActive = true;
+        this['_hasHit'] = false; // Reset collision guard từ parent class
     }
 
     onDisable() {

@@ -6,7 +6,8 @@ const { ccclass, property } = _decorator;
 @ccclass('TimerController')
 export class TimerController extends Component {
     public static _instance: TimerController;
-    protected _currentTime: number = 60;
+    public _maxTime: number = 60;
+    public _currentTime: number = 60;
     protected _timeLabel: Label;
 
     protected onLoad(): void {
@@ -15,6 +16,7 @@ export class TimerController extends Component {
         }
         TimerController._instance = this;
 
+        this._currentTime = this._maxTime;
 
         this._timeLabel = this.node.getChildByName('Timer').getComponent(Label);
         this._timeLabel.string = this._currentTime.toString();

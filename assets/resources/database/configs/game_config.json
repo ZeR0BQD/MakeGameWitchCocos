@@ -103,6 +103,17 @@
                 "prefab": "Prefabs/Skills/LightBullet/SpawnLightBullet",
                 "sprite": "Prefabs/Skills/LightBullet/Sprite/LightBulletSprite/spriteFrame"
             }
+        },
+        "Map": {
+            "Template": {
+                "prefab": "database/Map/Template/MapTilePrefab",
+                "totalTiles": 24,
+                "gridRows": 4,
+                "gridCols": 6
+            },
+            "Map1": {
+                "spritePath": "database/Map/Map1/Sprite"
+            }
         }
     }
 }

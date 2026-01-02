@@ -7,6 +7,8 @@ const { ccclass, property } = _decorator;
 @ccclass('ColliderSquid')
 export class ColliderSquid extends Component {
     protected squidController: SquidController = null;
+    private _hasHitPlayer: boolean = false;
+
     start() {
         this.squidController = this.getComponent(SquidController);
 
@@ -32,12 +34,24 @@ export class ColliderSquid extends Component {
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         const _layerNeedCheck = Layers.nameToLayer('Player');
         const _changeBitmask = 1 << _layerNeedCheck;
-        if (otherCollider.node.layer & _changeBitmask) {
-            const playerController = otherCollider.node.getComponent(PlayerController);
 
+        if (otherCollider.node.layer & _changeBitmask) {
+
+            if (this._hasHitPlayer) {
+                return;
+            }
+
+            const playerController = otherCollider.node.getComponent(PlayerController);
             if (playerController) {
+                this._hasHitPlayer = true;
+
                 const DAMAGE = this.squidController?._damage ?? 25;
                 playerController.hp -= DAMAGE;
+
+                // Reset flag sau 0.5s
+                this.scheduleOnce(() => {
+                    this._hasHitPlayer = false;
+                }, 0.5);
             }
         }
     }

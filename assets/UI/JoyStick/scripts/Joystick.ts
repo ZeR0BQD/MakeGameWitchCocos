@@ -61,6 +61,9 @@ export class Joystick extends Component {
   onDestroy() {
     const targetNode = this.touchArea || this.node;
 
+    // Null check để tránh crash khi destroy scene
+    if (!targetNode) return;
+
     targetNode.off(Node.EventType.TOUCH_START, this._onTouchStart, this);
     targetNode.off(Node.EventType.TOUCH_MOVE, this._onTouchMove, this);
     targetNode.off(Node.EventType.TOUCH_END, this._onTouchEnd, this);

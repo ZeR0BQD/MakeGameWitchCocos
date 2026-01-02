@@ -10,7 +10,7 @@ export class SquidMoveState implements ISquidState {
 
         const distance = Vec3.distance(squid.node.position, squid.target.position);
 
-        if (distance > squid.patrolRange) {
+        if (distance > squid.patrolRange && squid.enablePatrol) {
             squid.changeState(squid.patrolState);
             return;
         }

@@ -259,10 +259,13 @@
     "__prefab": {
       "__id__": 15
     },
-    "maxHealth": 20,
-    "expReward": 50,
-    "speed": 8,
-    "attackRange": 175,
+    "_maxHealth": 10,
+    "_expReward": 50,
+    "_speed": 8,
+    "_attackRange": 120,
+    "_patrolRange": 400,
+    "enablePatrol": false,
+    "_damage": 25,
     "_id": ""
   },
   {

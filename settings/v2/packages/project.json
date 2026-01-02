@@ -17,6 +17,10 @@
     {
       "name": "Pickup",
       "value": 8
+    },
+    {
+      "name": "Map",
+      "value": 16
     }
   ],
   "physics": {
@@ -43,5 +47,30 @@
       "height": 720,
       "fitHeight": true
     }
+  },
+  "sorting-layer": {
+    "layers": [
+      {
+        "id": 0,
+        "name": "default",
+        "value": 0
+      },
+      {
+        "id": 1,
+        "name": "UI_2D",
+        "value": 1
+      },
+      {
+        "id": 2,
+        "name": "Player",
+        "value": 2
+      },
+      {
+        "id": 3,
+        "name": "Map",
+        "value": 3
+      }
+    ],
+    "increaseId": 3
   }
 }
