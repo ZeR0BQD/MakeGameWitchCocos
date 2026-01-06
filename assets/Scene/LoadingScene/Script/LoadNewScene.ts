@@ -1,4 +1,5 @@
 import { _decorator, Component, ProgressBar, Label, director, Camera } from 'cc';
+import { SceneCameraController } from '../../MainScene/Script/SceneCameraController';
 const { ccclass, property } = _decorator;
 
 @ccclass('LoadNewScene')

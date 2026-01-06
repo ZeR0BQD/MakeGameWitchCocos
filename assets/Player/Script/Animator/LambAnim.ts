@@ -19,7 +19,6 @@ export class LambAnim extends Component {
 
     protected moveAnim() {
         if (!this.move || !this.move.DirecMove) {
-            console.warn("[LambAnim] Movement or DirecMove is null!");
             return;
         }
 
@@ -47,15 +46,11 @@ export class LambAnim extends Component {
             }
         }
 
-        // Chỉ switch animation khi khác
         if (this.currentAnim !== animName) {
-            console.log(`[LambAnim] ${this.currentAnim} → ${animName}, dir: (${dir.x.toFixed(2)}, ${dir.y.toFixed(2)})`);
             this.currentAnim = animName;
 
             if (this.animator) {
                 this.animator.play(this.currentAnim);
-            } else {
-                console.warn("[LambAnim] Animator is null!");
             }
         }
     }

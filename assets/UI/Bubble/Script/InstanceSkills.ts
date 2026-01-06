@@ -17,6 +17,7 @@ export class InstanceSkills extends Component implements IUISubscriber {
     private _bubbleDropRate: number = 20;
     private _skillDropConfig: any = null;
     private _skillConfig: any = null;
+    private _spriteCache: Map<string, SpriteFrame> = new Map();
 
     start() {
         const uiManager = UIManager.getInstance();
@@ -25,10 +26,7 @@ export class InstanceSkills extends Component implements IUISubscriber {
         }
         this._loadConfig();
 
-        if (this.bubbleContainer) {
-            console.log('[InstanceSkills] Bubble container:', this.bubbleContainer.name,
-                'parent:', this.bubbleContainer.parent?.name);
-        } else {
+        if (!this.bubbleContainer) {
             console.warn('[InstanceSkills] Bubble container NOT assigned!');
         }
     }
@@ -43,7 +41,6 @@ export class InstanceSkills extends Component implements IUISubscriber {
     public onUIEvent(eventType: string, data: any): void {
         if (eventType === 'enemyDie') {
             const { position, playerLevel } = data;
-            console.log(`[InstanceSkills] Enemy died at level ${playerLevel}`);
             this.spawnBubble(position, playerLevel);
         }
     }
@@ -58,9 +55,33 @@ export class InstanceSkills extends Component implements IUISubscriber {
         if (this._skillConfig.bubble) {
             this._bubbleDropRate = this._skillConfig.bubble.bubbleDropRate || 20;
             this._skillDropConfig = this._skillConfig.bubble.skillDropRate || null;
-            console.log('[InstanceSkills] Loaded config:', this._bubbleDropRate, this._skillDropConfig);
         } else {
             console.error('[InstanceSkills] Bubble config not found!');
+        }
+
+        this._preloadAllSkillSprites();
+    }
+
+    private _preloadAllSkillSprites(): void {
+        if (!this._skillConfig?.Prefabs?.Skills) {
+            console.warn('[InstanceSkills] No skills to preload');
+            return;
+        }
+
+        const skills = this._skillConfig.Prefabs.Skills;
+
+        for (const skillName in skills) {
+            const spritePath = skills[skillName].sprite;
+            if (!spritePath) continue;
+
+            resources.load(spritePath, SpriteFrame, (err, spriteFrame: SpriteFrame) => {
+                if (err) {
+                    console.error(`[InstanceSkills] Failed to preload "${skillName}":`, err);
+                    return;
+                }
+
+                this._spriteCache.set(skillName, spriteFrame);
+            });
         }
     }
 
@@ -141,19 +162,6 @@ export class InstanceSkills extends Component implements IUISubscriber {
     }
 
     private _setSkillSprite(bubble: Node, skillName: string): void {
-        if (!this._skillConfig?.Prefabs?.Skills?.[skillName]) {
-            console.warn(`[InstanceSkills] No config for skill "${skillName}"`);
-            return;
-        }
-
-        const skillConfig = this._skillConfig.Prefabs.Skills[skillName];
-        const spritePath = skillConfig.sprite;
-
-        if (!spritePath) {
-            console.warn(`[InstanceSkills] No sprite path for skill "${skillName}"`);
-            return;
-        }
-
         const adderNode = bubble.getChildByName("Adder");
         if (!adderNode) {
             console.error('[InstanceSkills] Adder node not found in bubble!');
@@ -166,18 +174,13 @@ export class InstanceSkills extends Component implements IUISubscriber {
             return;
         }
 
-        // Load sprite asset từ resources
-        resources.load(spritePath, SpriteFrame, (err, spriteFrame: SpriteFrame) => {
-            if (err) {
-                console.error(`[InstanceSkills] Failed to load sprite "${spritePath}":`, err);
-                return;
-            }
-
-            if (spriteFrame && spriteRenderer.isValid) {
-                spriteRenderer.spriteFrame = spriteFrame;
-                console.log(`[InstanceSkills] Set sprite for "${skillName}"`);
-            }
-        });
+        const cachedSprite = this._spriteCache.get(skillName);
+        if (cachedSprite) {
+            spriteRenderer.spriteFrame = cachedSprite;
+            console.log(`[InstanceSkills] ✅ Set cached sprite: ${skillName}`);
+        } else {
+            console.warn(`[InstanceSkills] ⚠️ Sprite not cached yet: ${skillName}`);
+        }
     }
 
     private spawnBubble(position: Vec3, playerLevel: number): void {

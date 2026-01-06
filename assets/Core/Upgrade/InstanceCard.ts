@@ -137,14 +137,7 @@ export class InstanceCard extends Component implements IUISubscriber {
      * Load drop rate config từ ConfigLoader's shared data
      */
     private _loadDropRateConfig(): void {
-        // Kiểm tra ConfigLoader component có trên node không
-        const configLoader = this.node.getComponent(ConfigLoader);
-        if (!configLoader) {
-            console.error('[InstanceCard] ConfigLoader component not found! Cần có ConfigLoader trên cùng node.');
-            return;
-        }
-
-        // Lấy config data từ shared storage
+        // Lấy config data từ shared
         const configData = ConfigLoader.sharedConfigData;
         if (!configData) {
             console.warn('[InstanceCard] Config data chưa được load. ConfigLoader chưa load xong.');

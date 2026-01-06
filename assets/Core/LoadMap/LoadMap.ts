@@ -94,8 +94,6 @@ export class LoadMap extends Component {
      * Load map theo tên
      */
     public loadMap(mapName: string): void {
-        console.log(`[LoadMap] Loading map: ${mapName}`);
-
         if (!ConfigLoader.sharedConfigData) {
             setTimeout(() => this.loadMap(mapName), 100);
             return;
@@ -109,20 +107,15 @@ export class LoadMap extends Component {
         this._gridCols = templateConfig.gridCols;
         this._totalTiles = templateConfig.totalTiles;
 
-        console.log(`[LoadMap] Grid: ${this._gridCols}x${this._gridRows}, Total: ${this._totalTiles}`);
-
         this.clearMap();
 
         this._loadAllSprites(mapConfig.spritePath, (sortedSprites) => {
             this._tileSize = sortedSprites[0].originalSize.width;
-            console.log(`[LoadMap] TileSize: ${this._tileSize}px`);
 
-            // Khởi tạo GridManager sau khi có tileSize
             this._gridManager = new GridManager(this._gridRows, this._gridCols, this._tileSize);
 
             this._loadPrefab(templateConfig.prefab, (prefab) => {
                 this._spawnTiles(sortedSprites, prefab);
-                console.log('[LoadMap] Map loaded successfully!');
             });
         });
     }
@@ -199,13 +192,10 @@ export class LoadMap extends Component {
         sortedSprites: SpriteFrame[],
         tilePrefab: Prefab
     ): void {
-        // Init pool lần đầu
         if (!this._tilePool['_initialized']) {
-            // Adjust pool size dựa trên totalTiles
             const poolSize = Math.max(this.tilePoolSize, this._totalTiles);
             this._tilePool.poolSize = poolSize;
             this._tilePool.init(tilePrefab);
-            console.log(`[LoadMap] Initialized tile pool with size: ${poolSize}`);
         }
 
         sortedSprites.forEach((spriteFrame, index) => {
@@ -235,19 +225,15 @@ export class LoadMap extends Component {
             this._tiles.set(key, { node: tileNode, row, col });
         });
 
-        // Khởi tạo culling module nếu enabled
         if (this.enableCulling) {
             this._cullingModule = new TileCullingModule(
                 this._tiles,
                 this._gridManager,
                 this.cullingRange
             );
-            console.log(`[LoadMap] Initialized culling module with range: ${this.cullingRange}`);
         }
 
-        // Emit event để notify LoadScene overlay
         director.emit('map-loaded', this.mapName);
-        console.log('[LoadMap] Emitted map-loaded event');
     }
 
     /**
@@ -261,11 +247,8 @@ export class LoadMap extends Component {
      * Clear toàn bộ map (return tiles về pool)
      */
     public clearMap(): void {
-        console.log('[LoadMap] Clearing map...');
-
         this._tiles.forEach(tile => {
             tile.node.removeFromParent();
-            // Return về pool thay vì destroy
             this._tilePool.returnObject(tile.node);
         });
 

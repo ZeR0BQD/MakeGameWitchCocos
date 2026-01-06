@@ -7,11 +7,13 @@ const { ccclass, property } = _decorator;
  */
 @ccclass('SceneCameraController')
 export class SceneCameraController extends Component {
-
+    @property public disableCamera: boolean = true;
     protected onLoad(): void {
-        const disabledCameras = this._disableAllCameras();
-        director.emit('scene-cameras-disabled', disabledCameras);
-        console.log('[SceneCameraController] Sent cameras list to LoadNewScene');
+        if (this.disableCamera) {
+            const disabledCameras = this._disableAllCameras();
+            director.emit('scene-cameras-disabled', disabledCameras);
+            console.log('[SceneCameraController] Sent cameras list to LoadNewScene');
+        }
     }
 
     private _disableAllCameras(): Camera[] {
