@@ -17,7 +17,6 @@ export class ConfigLoader extends Component implements IConfig {
     configPath?: string;
 
     public static sharedConfigData: any = null;
-    public static sharedConfigAsset: JsonAsset = null;
 
     @property(JsonAsset)
     public configAsset: JsonAsset = null;
@@ -80,7 +79,6 @@ export class ConfigLoader extends Component implements IConfig {
     private _loadConfigData(): void {
         // Nếu có configAsset mới, update shared data
         if (this.configAsset) {
-            ConfigLoader.sharedConfigAsset = this.configAsset;
             ConfigLoader.sharedConfigData = this.configAsset.json;
         }
 
@@ -100,7 +98,6 @@ export class ConfigLoader extends Component implements IConfig {
                 console.error(`[ConfigLoader] Failed to load config from "${path}":`, err);
                 return;
             }
-            ConfigLoader.sharedConfigAsset = jsonAsset;
             ConfigLoader.sharedConfigData = jsonAsset.json;
         });
     }
@@ -164,6 +161,5 @@ export class ConfigLoader extends Component implements IConfig {
      */
     public static clearSharedConfig(): void {
         ConfigLoader.sharedConfigData = null;
-        ConfigLoader.sharedConfigAsset = null;
     }
 }

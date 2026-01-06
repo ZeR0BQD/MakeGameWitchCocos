@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, resources, Vec3, Prefab, instantiate, SpriteFrame, SpriteRenderer, JsonAsset, CCInteger } from 'cc';
+import { _decorator, Component, Node, resources, Vec3, Prefab, instantiate, SpriteFrame, SpriteRenderer, JsonAsset, CCInteger, director } from 'cc';
 import { ConfigLoader } from 'db://assets/Core/Config/ConfigLoader';
 import { GridManager } from './GridManager';
 import { TileCullingModule } from './TileCullingModule';
@@ -244,6 +244,10 @@ export class LoadMap extends Component {
             );
             console.log(`[LoadMap] Initialized culling module with range: ${this.cullingRange}`);
         }
+
+        // Emit event để notify LoadScene overlay
+        director.emit('map-loaded', this.mapName);
+        console.log('[LoadMap] Emitted map-loaded event');
     }
 
     /**

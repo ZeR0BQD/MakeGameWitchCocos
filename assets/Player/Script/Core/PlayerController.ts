@@ -71,7 +71,7 @@ export class PlayerController extends Component implements IConfig {
         if (!PlayerController._instance) {
             PlayerController._instance = this;
         } else {
-            this.destroy();
+            this.node.destroy();
         }
     }
 

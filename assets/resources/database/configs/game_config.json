@@ -114,6 +114,9 @@
             "Map1": {
                 "spritePath": "database/Map/Map1/Sprite"
             }
+        },
+        "Scene": {
+            "LoadScene": "Scene/LoadScene/LoadScene"
         }
     }
 }
