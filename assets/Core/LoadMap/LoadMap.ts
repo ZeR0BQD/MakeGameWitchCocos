@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, resources, Vec3, Prefab, instantiate, SpriteFrame, SpriteRenderer, JsonAsset, CCInteger, director } from 'cc';
+import { _decorator, Component, Node, resources, Vec3, Prefab, instantiate, SpriteFrame, SpriteRenderer, JsonAsset, CCInteger, director, Layers } from 'cc';
 import { ConfigLoader } from 'db://assets/Core/Config/ConfigLoader';
 import { GridManager } from './GridManager';
 import { TileCullingModule } from './TileCullingModule';
@@ -219,7 +219,6 @@ export class LoadMap extends Component {
 
             // Add vào container
             tileNode.parent = this._mapTilesContainer;
-
             // Lưu vào Map theo row_col key
             const key = this._getTileKey(row, col);
             this._tiles.set(key, { node: tileNode, row, col });

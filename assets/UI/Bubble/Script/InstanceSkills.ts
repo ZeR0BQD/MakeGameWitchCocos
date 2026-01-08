@@ -177,9 +177,9 @@ export class InstanceSkills extends Component implements IUISubscriber {
         const cachedSprite = this._spriteCache.get(skillName);
         if (cachedSprite) {
             spriteRenderer.spriteFrame = cachedSprite;
-            console.log(`[InstanceSkills] ✅ Set cached sprite: ${skillName}`);
+            console.log(`[InstanceSkills] Set cached sprite: ${skillName}`);
         } else {
-            console.warn(`[InstanceSkills] ⚠️ Sprite not cached yet: ${skillName}`);
+            console.warn(`[InstanceSkills] Sprite not cached yet: ${skillName}`);
         }
     }
 

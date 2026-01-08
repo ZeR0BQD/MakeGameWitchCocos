@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, resources, instantiate, RichText } from 'cc';
+import { _decorator, Component, Node, Prefab, resources, instantiate, RichText, Layers } from 'cc';
 import { ConfigLoader } from 'db://assets/Core/Config/ConfigLoader';
 
 const { ccclass, property } = _decorator;
@@ -39,14 +39,6 @@ export class SkillsManager extends Component {
         skillNode.removeFromParent();
         skillNode.destroy();
         this._activeSkills.delete(skillName);
-    }
-
-    public getActiveSkills(): string[] {
-        return Array.from(this._activeSkills.keys());
-    }
-
-    public hasSkill(skillName: string): boolean {
-        return this._activeSkills.has(skillName);
     }
 
 
@@ -97,6 +89,7 @@ export class SkillsManager extends Component {
 
             skillInstance.name = `Skill_${skillName}`;
             this.node.addChild(skillInstance);
+            skillInstance.layer = 4;
             this._activeSkills.set(skillName, skillInstance);
             this._loadingSkills.delete(skillName);
         });

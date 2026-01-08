@@ -43,7 +43,7 @@ export class BubbleController extends Component {
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-        // Guard: Chỉ xử lý collision 1 lần duy nhất
+        // Chỉ xử lý collision 1 lần duy nhất
         if (this._hasCollided) {
             return;
         }

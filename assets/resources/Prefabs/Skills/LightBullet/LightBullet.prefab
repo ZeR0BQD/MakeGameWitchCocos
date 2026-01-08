@@ -62,7 +62,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 1073741824,
+    "_layer": 16,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -190,6 +190,7 @@
     "__prefab": {
       "__id__": 9
     },
+    "damage": 10,
     "_id": ""
   },
   {
@@ -210,6 +211,7 @@
     },
     "damage": 10,
     "speed": 500,
+    "maxLifetime": 2.5,
     "_id": ""
   },
   {

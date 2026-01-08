@@ -3,10 +3,6 @@
   "custom_joint_texture_layouts": [],
   "layer": [
     {
-      "name": "Player",
-      "value": 1
-    },
-    {
       "name": "Bullet",
       "value": 4
     },
@@ -20,6 +16,14 @@
     },
     {
       "name": "Map",
+      "value": 524288
+    },
+    {
+      "name": "Player",
+      "value": 1
+    },
+    {
+      "name": "Skill",
       "value": 16
     }
   ],

@@ -1,5 +1,4 @@
 import { _decorator, Component, ProgressBar, Label, director, Camera } from 'cc';
-import { SceneCameraController } from '../../MainScene/Script/SceneCameraController';
 const { ccclass, property } = _decorator;
 
 @ccclass('LoadNewScene')
@@ -17,7 +16,6 @@ export class LoadNewScene extends Component {
     private _sceneName: string = '';
     private _isMapLoading: boolean = false;
     private _mapLoadStartTime: number = 0;
-    private _sceneCameras: Camera[] = [];
 
     public set _setSceneName(name: string) {
         this._sceneName = name;
@@ -25,7 +23,6 @@ export class LoadNewScene extends Component {
 
     protected start(): void {
         director.addPersistRootNode(this.node);
-        director.on('scene-cameras-disabled', this._onSceneCamerasDisabled, this);
         this.load(this._sceneName);
         console.log("[LoadNewScene] Scene name:", this._sceneName);
     }
@@ -120,27 +117,9 @@ export class LoadNewScene extends Component {
 
         // Force 100%
         this._updateProgress(1);
-
-        // Bật lại tất cả cameras từ scene
-        this._enableSceneCameras();
         // Remove khỏi persist list trước khi destroy
         director.removePersistRootNode(this.node);
         this.node.destroy();
-    }
-
-    private _onSceneCamerasDisabled(cameras: Camera[]): void {
-        this._sceneCameras = cameras;
-        console.log(`[LoadNewScene] Received ${cameras.length} cameras from scene`);
-    }
-
-    private _enableSceneCameras(): void {
-        for (const camera of this._sceneCameras) {
-            if (camera && camera.isValid) {
-                camera.enabled = true;
-            }
-        }
-        console.log(`[LoadNewScene] Enabled ${this._sceneCameras.length} cameras`);
-        this._sceneCameras = [];
     }
 
     private _updateProgress(progress: number): void {
