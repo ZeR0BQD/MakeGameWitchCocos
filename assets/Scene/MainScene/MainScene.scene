@@ -3415,8 +3415,8 @@
       "x": 0.5,
       "y": 0.5
     },
-    "_fillStart": 1,
-    "_fillRange": -1,
+    "_fillStart": 0,
+    "_fillRange": 1,
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
@@ -3438,7 +3438,7 @@
     "_mode": 2,
     "_totalLength": 1,
     "_progress": 1,
-    "_reverse": true,
+    "_reverse": false,
     "_id": "70sLEsFHVB7K2sbUVh5xWK"
   },
   {
@@ -4015,8 +4015,8 @@
       "x": 0.5,
       "y": 0.5
     },
-    "_fillStart": 1,
-    "_fillRange": -1,
+    "_fillStart": 0,
+    "_fillRange": 1,
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
@@ -4038,7 +4038,7 @@
     "_mode": 2,
     "_totalLength": 1,
     "_progress": 1,
-    "_reverse": true,
+    "_reverse": false,
     "_id": "d9L+oOzg5O+4fDltcUfJ6P"
   },
   {
@@ -4615,8 +4615,8 @@
       "x": 0.5,
       "y": 0.5
     },
-    "_fillStart": 1,
-    "_fillRange": -1,
+    "_fillStart": 0,
+    "_fillRange": 1,
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
@@ -4638,7 +4638,7 @@
     "_mode": 2,
     "_totalLength": 1,
     "_progress": 1,
-    "_reverse": true,
+    "_reverse": false,
     "_id": "9fC+OAGHNIXahUH13NBH6Q"
   },
   {

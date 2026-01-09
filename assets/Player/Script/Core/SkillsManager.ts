@@ -46,19 +46,16 @@ export class SkillsManager extends Component {
      */
     public registerSkill(skill: ISkill): void {
         if (this._skillRegistry.has(skill.skillName)) {
-            console.warn(`[SkillsManager]<registerSkill> Skill ${skill.skillName} đã tồn tại, ghi đè`);
+            console.warn(`[SkillsManager] Skill already exists: ${skill.skillName}`);
         }
         this._skillRegistry.set(skill.skillName, skill);
-        console.log(`[SkillsManager]<registerSkill> Đã đăng ký: ${skill.skillName}`);
     }
 
     /**
      * Hủy đăng ký skill
      */
     public unregisterSkill(skillName: string): void {
-        if (this._skillRegistry.delete(skillName)) {
-            console.log(`[SkillsManager]<unregisterSkill> Đã xóa skill: ${skillName}`);
-        }
+        this._skillRegistry.delete(skillName);
     }
 
     /**
@@ -68,16 +65,12 @@ export class SkillsManager extends Component {
     public activateSkill(skillName: string): void {
         const skill = this._skillRegistry.get(skillName);
         if (!skill) {
-            console.error(`[SkillsManager]<activateSkill> Không tìm thấy skill: ${skillName}`);
+            console.error(`[SkillsManager] Skill not found: ${skillName}`);
             return;
         }
 
-        console.log(`[SkillsManager]<activateSkill> Kích hoạt: ${skill.skillName}`);
-
-        // Activate skill logic
         skill.activateSkill();
 
-        // PUBLISH UI event cho SkillButton và các UI components khác
         UIManager.getInstance()?.publish('skill-activated', {
             skillName: skill.skillName,
             maxCooldown: skill.maxCooldown,
@@ -191,11 +184,9 @@ export class SkillsManager extends Component {
             this._activeSkills.set(skillName, skillInstance);
             this._loadingSkills.delete(skillName);
 
-            // PUBLISH event cho SkillMenu và UI components khác
             UIManager.getInstance()?.publish('skill-added', {
                 skillName: skillName
             });
-            console.log(`[SkillsManager]<_loadAndSpawnSkill> Published 'skill-added' event for: ${skillName}`);
         });
     }
 }

@@ -40,9 +40,6 @@ export class SkillButton extends Component implements IUISubscriber {
 
         // Tìm child nodes
         this._findChildNodes();
-
-        // SUBSCRIBE vào UIManager
-        UIManager.getInstance()?.subscribe(this, 'skill-activated');
     }
 
     onDestroy() {
@@ -51,12 +48,23 @@ export class SkillButton extends Component implements IUISubscriber {
     }
 
     start() {
+        if (this._cooldownNode) this._cooldownNode.active = false;
+        if (this._stackNode) this._stackNode.active = false;
+
+        const uiManager = UIManager.getInstance();
+        if (!uiManager) {
+            console.error('[SkillButton]<start> UIManager instance is NULL!');
+            return;
+        }
+
+        uiManager.subscribe(this, 'skill-activated');
+
         if (this.skillName) {
             this._skill = SkillsManager.instance?.getSkill(this.skillName);
             if (this._skill) {
                 this._initializeUI();
             } else {
-                console.warn(`[SkillButton]<start> Không tìm thấy skill: ${this.skillName}`);
+                console.warn(`[SkillButton] Skill not found: ${this.skillName}`);
             }
         }
     }
@@ -64,26 +72,54 @@ export class SkillButton extends Component implements IUISubscriber {
     update(dt: number) {
         if (!this._skill) return;
 
-        // Update cooldown progress
-        if (this._skill.maxCooldown > 0 && this._currentCooldown > 0) {
-            this._currentCooldown -= dt;
-            if (this._currentCooldown < 0) this._currentCooldown = 0;
+        if (this._skill.maxStacks > 0 && this._skill.maxCooldown > 0) {
+            if (this._currentStacks < this._skill.maxStacks) {
+                this._currentCooldown -= dt;
 
-            // Update progress bar
+                if (this._currentCooldown <= 0) {
+                    this._currentStacks++;
+
+                    if (this._currentStacks < this._skill.maxStacks) {
+                        this._currentCooldown = this._skill.maxCooldown;
+                    } else {
+                        this._currentCooldown = 0;
+                    }
+                }
+
+                if (this._cooldownBar) {
+                    this._cooldownBar.progress = this._currentCooldown / this._skill.maxCooldown;
+                }
+
+                // Show cooldown during recharge
+                if (this._cooldownNode) {
+                    this._cooldownNode.active = true;
+                }
+            } else {
+                if (this._cooldownBar) {
+                    this._cooldownBar.progress = 1;
+                }
+
+                // Hide cooldown when full stacks
+                if (this._cooldownNode) {
+                    this._cooldownNode.active = false;
+                }
+            }
+
+            // Stack label always visible
+            if (this._stackLabel) {
+                this._stackLabel.string = `${this._currentStacks}`;
+            }
+        } else if (this._skill.maxCooldown > 0) {
+            // Non-stack skills: Standard cooldown
+            if (this._currentCooldown > 0) {
+                this._currentCooldown -= dt;
+                if (this._currentCooldown < 0) this._currentCooldown = 0;
+            }
+
             if (this._cooldownBar) {
                 const progress = 1 - (this._currentCooldown / this._skill.maxCooldown);
                 this._cooldownBar.progress = progress;
             }
-        }
-
-        // Update stack label
-        if (this._skill.maxStacks > 0 && this._stackLabel) {
-            // Try query từ skill nếu có method getCurrentStacks()
-            const skillAny = this._skill as any;
-            if (typeof skillAny.getCurrentStacks === 'function') {
-                this._currentStacks = skillAny.getCurrentStacks();
-            }
-            this._stackLabel.string = `${this._currentStacks}/${this._skill.maxStacks}`;
         }
     }
 
@@ -98,9 +134,8 @@ export class SkillButton extends Component implements IUISubscriber {
 
         if (this._skill) {
             this._initializeUI();
-            console.log(`[SkillButton]<setSkillName> Đã set skill: ${this._skill.skillName}`);
         } else {
-            console.error(`[SkillButton]<setSkillName> Không tìm thấy skill: ${skillName}`);
+            console.error(`[SkillButton] Skill not found: ${skillName}`);
         }
     }
 
@@ -113,26 +148,21 @@ export class SkillButton extends Component implements IUISubscriber {
      * SkillsManager publish, SkillButton nhận và xử lý
      */
     public onUIEvent(eventType: string, data: any): void {
-        if (eventType === 'skill-activated') {
-            // Chỉ xử lý nếu event là cho skill này
-            if (data.skillName === this.skillName) {
-                this._handleSkillActivated(data);
-            }
+        if (eventType === 'skill-activated' && data.skillName === this.skillName) {
+            this._handleSkillActivated(data);
         }
     }
 
     private _handleSkillActivated(data: any): void {
-        console.log(`[SkillButton]<_handleSkillActivated> Nhận event cho skill: ${data.skillName}`);
-
-        // Update cooldown tracking
-        if (data.maxCooldown > 0) {
-            this._currentCooldown = data.maxCooldown;
-        }
-
-        // Update stack tracking
         if (data.maxStacks > 0) {
             this._currentStacks--;
             if (this._currentStacks < 0) this._currentStacks = 0;
+
+            if (this._currentStacks < data.maxStacks && this._currentCooldown <= 0) {
+                this._currentCooldown = data.maxCooldown;
+            }
+        } else if (data.maxCooldown > 0) {
+            this._currentCooldown = data.maxCooldown;
         }
     }
 
@@ -177,26 +207,20 @@ export class SkillButton extends Component implements IUISubscriber {
      */
     private onButtonClick(): void {
         if (!this.skillName || !this._skill) {
-            console.warn('[SkillButton]<onButtonClick> Skill chưa được set');
+            console.warn('[SkillButton] Skill not set');
             return;
         }
 
-        // Check cooldown (SkillButton tự check)
-        if (this._skill.maxCooldown > 0 && this._currentCooldown > 0) {
-            console.log(`[SkillButton]<onButtonClick> Skill đang cooldown: ${this._currentCooldown.toFixed(1)}s`);
-            return;
+        if (this._skill.maxStacks > 0) {
+            if (this._currentStacks <= 0) {
+                return;
+            }
+        } else {
+            if (this._skill.maxCooldown > 0 && this._currentCooldown > 0) {
+                return;
+            }
         }
 
-        // Check stacks (SkillButton tự check hoặc query từ skill)
-        if (this._skill.maxStacks > 0 && this._currentStacks <= 0) {
-            console.log('[SkillButton]<onButtonClick> Không còn stacks');
-            return;
-        }
-
-        console.log(`[SkillButton]<onButtonClick> Kích hoạt skill: ${this.skillName}`);
-
-        // CHÍNH: Gọi qua SkillsManager (không gọi trực tiếp skill.activateSkill)
-        // SkillsManager sẽ publish event → UIManager → _handleSkillActivated() update tracking
         SkillsManager.instance?.activateSkill(this.skillName);
     }
 
@@ -207,54 +231,39 @@ export class SkillButton extends Component implements IUISubscriber {
     private _initializeUI(): void {
         if (!this._skill) return;
 
-        // 1. INJECT ICON từ InstanceSkills
         if (this._centerImage) {
-            // Đối chiếu skillName với InstanceSkills sprite cache
             const sprite = InstanceSkills.getInstance()?.getSpriteBySkillName(this._skill.skillName);
             if (sprite) {
                 this._centerImage.spriteFrame = sprite;
-                console.log(`[SkillButton]<_initializeUI> Đã inject icon từ InstanceSkills cho ${this._skill.skillName}`);
             } else {
-                console.warn(`[SkillButton]<_initializeUI> Không tìm thấy sprite cho ${this._skill.skillName}`);
+                console.warn(`[SkillButton] Sprite not found: ${this._skill.skillName}`);
             }
         }
 
-        // 2. XỬ LÝ COOLDOWN NODE
         if (this._cooldownNode) {
             if (this._skill.maxCooldown > 0) {
-                // Có cooldown → Active node và setup
                 this._cooldownNode.active = true;
-                this._currentCooldown = 0; // Ban đầu ready
-
+                this._currentCooldown = 0;
                 if (this._cooldownBar) {
-                    this._cooldownBar.progress = 1; // Full progress = ready
+                    this._cooldownBar.progress = 1;
                 }
-                console.log(`[SkillButton]<_initializeUI> Cooldown node active (maxCooldown: ${this._skill.maxCooldown}s)`);
             } else {
-                // Không có cooldown → Deactive node
                 this._cooldownNode.active = false;
-                console.log('[SkillButton]<_initializeUI> Cooldown node deactive (không có cooldown)');
             }
         }
 
-        // 3. XỬ LÝ STACK NODE
         if (this._stackNode) {
+            // Mặc định tắt, chỉ bật khi có stack
+            this._stackNode.active = false;
+
             if (this._skill.maxStacks > 0) {
-                // Có stacks → Active node và setup
                 this._stackNode.active = true;
-                this._currentStacks = this._skill.maxStacks; // Ban đầu full stacks
+                this._currentStacks = this._skill.maxStacks;
 
                 if (this._stackLabel) {
-                    this._stackLabel.string = `${this._currentStacks}/${this._skill.maxStacks}`;
+                    this._stackLabel.string = `${this._currentStacks}`;
                 }
-                console.log(`[SkillButton]<_initializeUI> Stack node active (maxStacks: ${this._skill.maxStacks})`);
-            } else {
-                // Không có stacks → Deactive node
-                this._stackNode.active = false;
-                console.log('[SkillButton]<_initializeUI> Stack node deactive (không có stacks)');
             }
         }
-
-        console.log(`[SkillButton]<_initializeUI> UI initialized cho skill: ${this._skill.skillName}`);
     }
 }
