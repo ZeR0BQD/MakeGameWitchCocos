@@ -484,7 +484,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "PrecenLoading",
+    "_name": "PrecenLabel",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -953,7 +953,7 @@
     "progressBar": {
       "__id__": 30
     },
-    "precenLoading": {
+    "percentLabel": {
       "__id__": 18
     },
     "_id": ""

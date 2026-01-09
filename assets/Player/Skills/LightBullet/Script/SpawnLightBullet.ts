@@ -70,7 +70,7 @@ export class SpawnLightBullet extends SpawnAroundPlayer implements ISkill {
 
     private onKeyDown(event: any): void {
         if (event.keyCode === KeyCode.KEY_Q) {
-            this.activateSkill(); // Gọi thông qua interface method
+            this.activateSkill();
         }
     }
 
