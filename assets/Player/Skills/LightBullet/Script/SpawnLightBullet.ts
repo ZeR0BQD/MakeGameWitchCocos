@@ -1,20 +1,25 @@
 import { _decorator, CCInteger, Input, input, KeyCode, Node } from 'cc';
 import { SpawnAroundPlayer } from 'db://assets/Player/Skills/Script/SpawnAroundPlayer';
 import { LightBulletCtrl } from './LightBulletCtrl';
+import { ISkill } from '../../Script/ISkill';
+import { SkillsManager } from 'db://assets/Player/Script/Core/SkillsManager';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('SpawnLightBullet')
-export class SpawnLightBullet extends SpawnAroundPlayer {
+export class SpawnLightBullet extends SpawnAroundPlayer implements ISkill {
     @property({ type: CCInteger, override: true }) public numberOfObjects: number = 10;
     @property({ override: true }) public distanceSpawn: number = 50;
+
+    // ISkill properties
+    public readonly skillName: string = 'LightBullet';
+    public readonly maxCooldown: number = 3.0;
+    public readonly maxStacks: number = 3;
+    public readonly activateKeyCode: KeyCode = KeyCode.KEY_Q;
 
     // Cooldown & Stack Config
     @property({ tooltip: 'Thời gian hồi 1 stack (giây)' })
     public cooldownPerStack: number = 3.0;
-
-    @property({ type: CCInteger, tooltip: 'Số stack tối đa' })
-    public maxStacks: number = 3;
 
     @property({ tooltip: 'Delay giữa các lần nhấn phím (giây)' })
     public inputDelay: number = 0.75;
@@ -28,10 +33,16 @@ export class SpawnLightBullet extends SpawnAroundPlayer {
         super.onLoad();
         input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
         this._currentStacks = this.maxStacks;
+
+        // Auto-register vào SkillsManager
+        SkillsManager.instance?.registerSkill(this);
     }
 
     onDestroy(): void {
         input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
+
+        // Unregister khỏi SkillsManager
+        SkillsManager.instance?.unregisterSkill(this.skillName);
     }
 
     update(deltaTime: number): void {
@@ -59,8 +70,16 @@ export class SpawnLightBullet extends SpawnAroundPlayer {
 
     private onKeyDown(event: any): void {
         if (event.keyCode === KeyCode.KEY_Q) {
-            this.tryActivate();
+            this.activateSkill(); // Gọi thông qua interface method
         }
+    }
+
+    /**
+     * METHOD CHÍNH từ ISkill interface
+     * SkillButton hoặc keyboard input gọi method này
+     */
+    public activateSkill(): void {
+        this.tryActivate(); // Delegate sang method hiện tại
     }
 
     /**

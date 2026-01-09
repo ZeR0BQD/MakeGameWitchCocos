@@ -8,6 +8,13 @@ const { ccclass, property } = _decorator;
 
 @ccclass('InstanceSkills')
 export class InstanceSkills extends Component implements IUISubscriber {
+    // Singleton
+    private static _instance: InstanceSkills = null;
+
+    public static getInstance(): InstanceSkills {
+        return InstanceSkills._instance;
+    }
+
     @property({ type: Prefab })
     private bubblePrefab: Prefab = null;
 
@@ -20,6 +27,14 @@ export class InstanceSkills extends Component implements IUISubscriber {
     private _spriteCache: Map<string, SpriteFrame> = new Map();
 
     start() {
+        // Singleton setup
+        if (InstanceSkills._instance && InstanceSkills._instance !== this) {
+            console.warn('[InstanceSkills] Instance đã tồn tại, hủy duplicate');
+            this.destroy();
+            return;
+        }
+        InstanceSkills._instance = this;
+
         const uiManager = UIManager.getInstance();
         if (uiManager) {
             uiManager.subscribe(this, 'enemyDie');
@@ -32,6 +47,10 @@ export class InstanceSkills extends Component implements IUISubscriber {
     }
 
     onDestroy() {
+        if (InstanceSkills._instance === this) {
+            InstanceSkills._instance = null;
+        }
+
         const uiManager = UIManager.getInstance();
         if (uiManager) {
             uiManager.unsubscribe(this, 'enemyDie');
@@ -43,6 +62,23 @@ export class InstanceSkills extends Component implements IUISubscriber {
             const { position, playerLevel } = data;
             this.spawnBubble(position, playerLevel);
         }
+    }
+
+    /**
+     * PUBLIC method để SkillButton lấy sprite theo tên skill
+     * Đối chiếu skillName từ SkillsManager với _spriteCache
+     * CLONE trước khi return để tránh share reference conflicts
+     */
+    public getSpriteBySkillName(skillName: string): SpriteFrame | null {
+        const sprite = this._spriteCache.get(skillName);
+        if (!sprite) {
+            console.warn(`[InstanceSkills]<getSpriteBySkillName> Sprite chưa được cache: ${skillName}`);
+            return null;
+        }
+
+        // CLONE để tránh share reference giữa UI components
+        // Fix: Bubble và SkillButton cùng dùng 1 SpriteFrame gây conflict
+        return sprite.clone();
     }
 
     private _loadConfig(): void {
@@ -213,6 +249,12 @@ export class InstanceSkills extends Component implements IUISubscriber {
         this.scheduleOnce(() => {
             bubble.active = true;
             console.log(`[InstanceSkills] Bubble activated: ${skillName}`);
+
+            // DEBUG: Log sprite cache
+            console.log("[InstanceSkills] Sprite cache contents:");
+            this._spriteCache.forEach((value, key) => {  // Map.forEach: (value, key)!
+                console.log(`  - ${key}:`, value);
+            });
         }, 0);
 
         console.log(`[InstanceSkills] Spawned at level ${playerLevel}`);
