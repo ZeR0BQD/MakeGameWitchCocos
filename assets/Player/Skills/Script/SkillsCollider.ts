@@ -15,7 +15,11 @@ export class SkillsCollider extends Component {
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D) {
-        const damageable = otherCollider.node.getComponent(IDamageable);
+        let damageable = otherCollider.node.getComponent(IDamageable);
+        // Check parent if not found on collider node
+        if (!damageable) {
+            damageable = otherCollider.node.parent?.getComponent(IDamageable);
+        }
 
         if (this._hasHit) return;
 

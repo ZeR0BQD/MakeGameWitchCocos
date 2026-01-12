@@ -124,7 +124,6 @@ export class InstanceSkills extends Component implements IUISubscriber {
     private randomBubbleDrop(): boolean {
         const roll = Math.random() * 100;
         const willDrop = roll < this._bubbleDropRate;
-        console.log(`[InstanceSkills] Drop roll: ${roll.toFixed(2)} < ${this._bubbleDropRate}? ${willDrop}`);
         return willDrop;
     }
 
@@ -142,22 +141,17 @@ export class InstanceSkills extends Component implements IUISubscriber {
             return 'Sword';
         }
 
-        console.log(`[InstanceSkills] Drop rates for level ${playerLevel} (milestone ${milestone}):`, dropRates);
-
         const random = Math.random() * 100;
         let accumulated = 0;
 
         for (const skillName in dropRates) {
             const rate = dropRates[skillName];
             accumulated += rate;
-            console.log(`[InstanceSkills] Checking ${skillName}: accumulated ${accumulated}, roll ${random}`);
             if (random < accumulated) {
-                console.log(`[InstanceSkills] Selected: ${skillName}`);
                 return skillName;
             }
         }
 
-        console.log('[InstanceSkills] No match, fallback to Sword');
         return 'Sword';
     }
 
@@ -191,7 +185,6 @@ export class InstanceSkills extends Component implements IUISubscriber {
         const bubbleCtrl = bubble.getComponent(BubbleController);
         if (bubbleCtrl) {
             bubbleCtrl.setSkillName(skillName);
-            console.log(`[InstanceSkills] Injected skill: ${skillName}`);
         } else {
             console.error('[InstanceSkills] BubbleController not found!');
         }
@@ -213,7 +206,6 @@ export class InstanceSkills extends Component implements IUISubscriber {
         const cachedSprite = this._spriteCache.get(skillName);
         if (cachedSprite) {
             spriteRenderer.spriteFrame = cachedSprite;
-            console.log(`[InstanceSkills] Set cached sprite: ${skillName}`);
         } else {
             console.warn(`[InstanceSkills] Sprite not cached yet: ${skillName}`);
         }
@@ -221,11 +213,8 @@ export class InstanceSkills extends Component implements IUISubscriber {
 
     private spawnBubble(position: Vec3, playerLevel: number): void {
         if (!this.randomBubbleDrop()) {
-            console.log('[InstanceSkills] Drop failed');
             return;
         }
-
-        console.log('[InstanceSkills] Drop success! Spawning...');
 
         if (!this.bubblePrefab) {
             console.error('[InstanceSkills] Bubble prefab not assigned!');
@@ -248,15 +237,6 @@ export class InstanceSkills extends Component implements IUISubscriber {
 
         this.scheduleOnce(() => {
             bubble.active = true;
-            console.log(`[InstanceSkills] Bubble activated: ${skillName}`);
-
-            // DEBUG: Log sprite cache
-            console.log("[InstanceSkills] Sprite cache contents:");
-            this._spriteCache.forEach((value, key) => {  // Map.forEach: (value, key)!
-                console.log(`  - ${key}:`, value);
-            });
         }, 0);
-
-        console.log(`[InstanceSkills] Spawned at level ${playerLevel}`);
     }
 }

@@ -58,7 +58,7 @@ export class SpawnLightBullet extends SpawnAroundPlayer implements ISkill {
             // Khi cooldown hết, hồi 1 stack
             if (this._cooldownTimer <= 0) {
                 this._currentStacks++;
-                console.log(`[LightBullet] Stack recharged: ${this._currentStacks}/${this.maxStacks}`);
+                this._currentStacks++;
 
                 // Reset timer nếu vẫn chưa full
                 if (this._currentStacks < this.maxStacks) {
@@ -90,13 +90,11 @@ export class SpawnLightBullet extends SpawnAroundPlayer implements ISkill {
 
         // Check input delay
         if (currentTime - this._lastInputTime < this.inputDelay) {
-            console.log('[LightBullet] Input too fast! Wait...');
             return;
         }
 
         // Check stacks
         if (this._currentStacks <= 0) {
-            console.log('[LightBullet] No stacks available! Cooldown remaining:', this._cooldownTimer.toFixed(1));
             return;
         }
 
@@ -109,8 +107,6 @@ export class SpawnLightBullet extends SpawnAroundPlayer implements ISkill {
         if (this._currentStacks < this.maxStacks && this._cooldownTimer <= 0) {
             this._cooldownTimer = this.cooldownPerStack;
         }
-
-        console.log(`[LightBullet] Activated! Stacks: ${this._currentStacks}/${this.maxStacks}`);
     }
 
     /**
@@ -137,8 +133,9 @@ export class SpawnLightBullet extends SpawnAroundPlayer implements ISkill {
         // Listen event return-to-pool để return bullet về pool ĐÚNG CÁCH
         bullet.off('return-to-pool'); // Remove old listener nếu có
         bullet.on('return-to-pool', () => {
-            this._pool.returnObject(bullet);
-            console.log('[SpawnLightBullet] Returned bullet to pool');
+            this.scheduleOnce(() => {
+                this._pool.returnObject(bullet);
+            }, 0);
         }, this);
     }
 }

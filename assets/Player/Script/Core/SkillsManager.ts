@@ -32,7 +32,7 @@ export class SkillsManager extends Component {
             return;
         }
         SkillsManager._instance = this;
-        console.log('[SkillsManager]<onLoad> Singleton initialized');
+
     }
 
     start() {

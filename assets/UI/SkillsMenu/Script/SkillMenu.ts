@@ -33,7 +33,7 @@ export class SkillMenu extends Component implements IUISubscriber {
         }
 
         uiManager.subscribe(this, 'skill-added');
-        console.log(`[SkillMenu]<start> Subscribed to skill-added events, ${this.skillButtons.length} slots available`);
+        uiManager.subscribe(this, 'skill-added');
     }
 
     onDestroy() {
@@ -46,7 +46,7 @@ export class SkillMenu extends Component implements IUISubscriber {
      * Nhận events từ UIManager
      */
     public onUIEvent(eventType: string, data: any): void {
-        console.log(`[SkillMenu]<onUIEvent> Received event: ${eventType}, data:`, data);
+
 
         if (eventType === 'skill-added') {
             this._onSkillAdded(data.skillName);
@@ -58,11 +58,9 @@ export class SkillMenu extends Component implements IUISubscriber {
      * EVENT-DRIVEN - Chỉ gọi khi có skill thật sự được thêm
      */
     private _onSkillAdded(skillName: string): void {
-        console.log(`[SkillMenu]<_onSkillAdded> Skill added: ${skillName}`);
 
         // Check nếu đã có skill này rồi
         if (this._activeSkills.includes(skillName)) {
-            console.log(`[SkillMenu]<_onSkillAdded> Skill ${skillName} đã có, bỏ qua`);
             return;
         }
 
@@ -79,26 +77,18 @@ export class SkillMenu extends Component implements IUISubscriber {
 
         // Gán cho button
         this._assignSkillToButton(skillName, emptySlotIndex);
-
-        console.log(`[SkillMenu]<_onSkillAdded> Assigned ${skillName} to slot ${emptySlotIndex}`);
-        console.log(`[SkillMenu]<_onSkillAdded> Active skills:`, this._activeSkills);
     }
 
     /**
      * Tìm slot trống đầu tiên
      */
     private _findEmptySlot(): number {
-        console.log(`[SkillMenu]<_findEmptySlot> Current _activeSkills:`, this._activeSkills);
 
         for (let i = 0; i < this._activeSkills.length; i++) {
-            console.log(`[SkillMenu]<_findEmptySlot> Checking slot ${i}: ${this._activeSkills[i]}`);
             if (!this._activeSkills[i]) {
-                console.log(`[SkillMenu]<_findEmptySlot> Found empty slot: ${i}`);
                 return i;
             }
         }
-
-        console.log('[SkillMenu]<_findEmptySlot> No empty slot found');
         return -1;  // Không còn slot trống
     }
 
@@ -125,6 +115,5 @@ export class SkillMenu extends Component implements IUISubscriber {
 
         // INJECT skillName vào SkillButton
         skillButton.setSkillName(skillName);
-        console.log(`[SkillMenu]<_assignSkillToButton> Injected ${skillName} into button ${buttonIndex}`);
     }
 }
