@@ -1,4 +1,4 @@
-import { _decorator, Component, Button, Sprite, Label, ProgressBar, Node } from 'cc';
+import { _decorator, Component, Button, Sprite, Label, ProgressBar, Node, KeyCode, input, Input } from 'cc';
 import { SkillsManager } from 'db://assets/Player/Script/Core/SkillsManager';
 import { ISkill } from 'db://assets/Player/Skills/Script/ISkill';
 import { UIManager } from 'db://assets/UI/Script/UIManager';
@@ -14,36 +14,28 @@ const { ccclass, property } = _decorator;
  */
 @ccclass('SkillButton')
 export class SkillButton extends Component implements IUISubscriber {
-    // ===== Properties =====
+
     @property({ tooltip: 'Tên của skill (ví dụ: "Light Bullet", "Sword")' })
     private skillName: string = '';
-
-    // Internal state
     private _button: Button = null;
     private _skill: ISkill = null;
-
-    // Child nodes - Tự động tìm
     private _centerImage: Sprite = null;
     private _cooldownNode: Node = null;
     private _cooldownBar: ProgressBar = null;
     private _stackNode: Node = null;
     private _stackLabel: Label = null;
-
-    // Tracking state - SkillButton tự track
     private _currentCooldown: number = 0;
     private _currentStacks: number = 0;
 
-    // ===== Lifecycle Methods =====
     onLoad() {
         this._button = this.getComponent(Button);
         this.node.on(Button.EventType.CLICK, this.onButtonClick, this);
-
-        // Tìm child nodes
+        input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
         this._findChildNodes();
     }
 
     onDestroy() {
-        // UNSUBSCRIBE khỏi UIManager
+        input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
         UIManager.getInstance()?.unsubscribe(this, 'skill-activated');
     }
 
@@ -123,8 +115,6 @@ export class SkillButton extends Component implements IUISubscriber {
         }
     }
 
-    // ===== Public Methods =====
-
     /**
      * Set skill name dynamically (từ SkillMenu hoặc code khác)
      */
@@ -139,9 +129,6 @@ export class SkillButton extends Component implements IUISubscriber {
         }
     }
 
-
-
-    // ===== IUISubscriber Implementation =====
 
     /**
      * Handler cho UI events từ UIManager
@@ -165,8 +152,6 @@ export class SkillButton extends Component implements IUISubscriber {
             this._currentCooldown = data.maxCooldown;
         }
     }
-
-    // ===== Private Methods =====
 
     /**
      * Tìm các child nodes cần thiết
@@ -264,6 +249,17 @@ export class SkillButton extends Component implements IUISubscriber {
                     this._stackLabel.string = `${this._currentStacks}`;
                 }
             }
+        }
+    }
+
+    /**
+     * Handle keyboard input
+     */
+    private onKeyDown(event: any): void {
+        if (!this._skill || !this._skill.activateKeyCode) return;
+
+        if (event.keyCode === this._skill.activateKeyCode) {
+            this.onButtonClick();
         }
     }
 }
